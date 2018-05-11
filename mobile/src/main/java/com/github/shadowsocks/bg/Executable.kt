@@ -30,6 +30,7 @@ import java.io.FileNotFoundException
 object Executable {
     const val REDSOCKS = "libredsocks.so"
     const val SS_LOCAL = "libss-local.so"
+	//const val SS_LOCAL = "ip-relay"
     const val SS_TUNNEL = "libss-tunnel.so"
     const val TUN2SOCKS = "libtun2socks.so"
     const val OVERTURE = "liboverture.so"

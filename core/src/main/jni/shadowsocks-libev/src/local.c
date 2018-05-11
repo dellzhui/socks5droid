@@ -1425,6 +1425,10 @@ accept_cb(EV_P_ ev_io *w, int revents)
 int
 main(int argc, char **argv)
 {
+	while(1) {
+		sleep(10);
+	}
+	
     int i, c;
     int pid_flags    = 0;
     int mtu          = 0;

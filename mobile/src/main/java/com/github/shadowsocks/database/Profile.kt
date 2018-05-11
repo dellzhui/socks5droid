@@ -100,13 +100,13 @@ class Profile : Serializable {
     var name: String? = ""
 
     @DatabaseField
-    var host: String = "198.199.101.152"
+    var host: String = "45.78.56.15"
 
     @DatabaseField
-    var remotePort: Int = 8388
+    var remotePort: Int = 443
 
     @DatabaseField
-    var password: String = "u1rRWTssNv0p"
+    var password: String = "ODRkZmVjMD"
 
     @DatabaseField
     var method: String = "aes-256-cfb"
@@ -124,7 +124,7 @@ class Profile : Serializable {
     var bypass: Boolean = false
 
     @DatabaseField
-    var udpdns: Boolean = false
+    var udpdns: Boolean = true
 
     @DatabaseField
     var ipv6: Boolean = true

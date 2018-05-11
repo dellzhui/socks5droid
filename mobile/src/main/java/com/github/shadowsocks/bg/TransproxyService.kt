@@ -41,6 +41,7 @@ class TransproxyService : Service(), LocalDnsService.Interface {
             super<LocalDnsService.Interface>.onStartCommand(intent, flags, startId)
 
     private fun startDNSTunnel() {
+		return
         data.processes.start(listOf(File(applicationInfo.nativeLibraryDir, Executable.SS_TUNNEL).absolutePath,
                 "-t", "10",
                 "-b", "127.0.0.1",

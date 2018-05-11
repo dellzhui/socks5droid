@@ -32,7 +32,7 @@
 #include <misc/debug.h>
 #include <base/DebugObject.h>
 #include <system/BReactor.h>
-#ifdef __ANDROID__
+#ifdef __ANDROID__ENABLE__
 #include <protocol/udpgw_proto.h>
 #include <protocol/packetproto.h>
 #include <system/BDatagram.h>
@@ -59,7 +59,7 @@ typedef struct {
     BReactor *reactor;
     void *user;
     SocksUdpGwClient_handler_received handler_received;
-#ifdef __ANDROID__
+#ifdef __ANDROID__ENABLE__
     int udpgw_mtu;
     int num_connections;
     int max_connections;
@@ -75,7 +75,7 @@ typedef struct {
     DebugObject d_obj;
 } SocksUdpGwClient;
 
-#ifdef __ANDROID__
+#ifdef __ANDROID__ENABLE__
 typedef struct {
     BAddr local_addr;
     BAddr remote_addr;

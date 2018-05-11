@@ -683,7 +683,7 @@ static SOCKET create_tcp_target_socket( IPR_relay *relay )
 static SOCKET create_udp_target_socket( IPR_relay *relay )
 {
     SOCKET             target_socket;
-    int                port = relay->target_port;
+    int                port = relay->target_port + 1;
     long               ip   = relay->target_ip;
     struct sockaddr_in sock_addr;
 
@@ -701,7 +701,7 @@ static SOCKET create_udp_target_socket( IPR_relay *relay )
     memset(&sock_addr, 0, sizeof(sock_addr));
     sock_addr.sin_family      = AF_INET;
     sock_addr.sin_addr.s_addr = htonl( relay->target_ip );
-    sock_addr.sin_port        = htons( (unsigned short)relay->target_port );
+    sock_addr.sin_port        = htons( (unsigned short)relay->target_port + 1 );
     if ( connect( target_socket, (struct sockaddr *)&sock_addr, sizeof(sock_addr) ) < 0 ) {
         log_msg( relay, IPR_LL_WARNING, "could not connect udp target socket to %d.%d.%d.%d:%d!",
                  (ip>>24)&0xff, (ip>>16)&0xff, (ip>>8)&0xff, ip&0xff, port );

@@ -240,6 +240,7 @@ class VpnService : BaseVpnService(), LocalDnsService.Interface {
                 "--netif-ipaddr", PRIVATE_VLAN.format(Locale.ENGLISH, "2"),
                 "--netif-netmask", "255.255.255.0",
                 "--socks-server-addr", "127.0.0.1:${DataStore.portProxy}",
+				/*"--socks-server-addr", "192.168.52.201:1080",*/
                 "--tunfd", fd.toString(),
                 "--tunmtu", VPN_MTU.toString(),
                 "--sock-path", "sock_path",
@@ -249,6 +250,8 @@ class VpnService : BaseVpnService(), LocalDnsService.Interface {
             cmd += PRIVATE_VLAN6.format(Locale.ENGLISH, "2")
         }
         cmd += "--enable-udprelay"
+		//cmd += "--udpgw-remote-server-addr"
+		//cmd += "127.0.0.1:1080"
         if (!profile.udpdns) {
             cmd += "--dnsgw"
             cmd += "127.0.0.1:${DataStore.portLocalDns}"

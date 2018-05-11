@@ -273,7 +273,15 @@ object BaseService {
             if (profile.udpdns) cmd += "-D"
 
             if (TcpFastOpen.sendEnabled) cmd += "--fast-open"
-
+			
+			/*val cmd = buildAdditionalArguments(arrayListOf(
+					/*File((this as Context).applicationInfo.nativeLibraryDir, Executable.SS_LOCAL).absolutePath,*/
+					"/system/bin/ip-relay",
+					"1080",
+					"192.168.52.103", "12011",
+					"/data/data/com.github.shadowsocks/files"
+					))*/
+					  
             data.processes.start(cmd)
         }
 
