@@ -256,7 +256,8 @@ object BaseService {
         fun startNativeProcesses() {
             val data = data
             val profile = data.profile!!
-            val cmd = buildAdditionalArguments(arrayListOf(
+
+            /*val cmd = buildAdditionalArguments(arrayListOf(
                     File((this as Context).applicationInfo.nativeLibraryDir, Executable.SS_LOCAL).absolutePath,
                     "-u",
                     "-b", "127.0.0.1",
@@ -272,16 +273,15 @@ object BaseService {
 
             if (profile.udpdns) cmd += "-D"
 
-            if (TcpFastOpen.sendEnabled) cmd += "--fast-open"
+            if (TcpFastOpen.sendEnabled) cmd += "--fast-open"*/
 			
-			/*val cmd = buildAdditionalArguments(arrayListOf(
-					/*File((this as Context).applicationInfo.nativeLibraryDir, Executable.SS_LOCAL).absolutePath,*/
-					"/system/bin/ip-relay",
-					"1080",
-					"192.168.52.103", "12011",
-					"/data/data/com.github.shadowsocks/files"
-					))*/
-					  
+			val cmd = buildAdditionalArguments(arrayListOf(
+					File((this as Context).applicationInfo.nativeLibraryDir, Executable.SS_LOCAL).absolutePath,
+                    DataStore.portProxy.toString(),
+					profile.host,
+					profile.remotePort.toString(),
+					"/data/data/com.github.shadowsocks/files"))
+
             data.processes.start(cmd)
         }
 

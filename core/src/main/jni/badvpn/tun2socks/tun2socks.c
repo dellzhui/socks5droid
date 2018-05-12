@@ -990,7 +990,13 @@ int parse_arguments (int argc, char *argv[])
 #ifdef __ANDROID__
         else if (!strcmp(arg, "--enable-udprelay")) {
             //options.udpgw_remote_server_addr = "0.0.0.0:0";
-            options.udpgw_remote_server_addr = "192.168.52.201:12012";
+			//options.udpgw_remote_server_addr = "192.168.52.201:12012";
+			if (1 >= argc - i) {
+                fprintf(stderr, "%s: requires an argument\n", arg);
+                return 0;
+            }
+            options.udpgw_remote_server_addr = argv[i + 1];
+            i++;
 #else
         else if (!strcmp(arg, "--udpgw-remote-server-addr")) {
             if (1 >= argc - i) {

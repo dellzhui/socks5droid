@@ -253,7 +253,7 @@ SHADOWSOCKS_SOURCES := local.c \
 	plugin.c ppbloom.c \
 	android.c
 
-LOCAL_MODULE    := ss-local
+LOCAL_MODULE    := ss-local_old
 LOCAL_SRC_FILES := $(addprefix shadowsocks-libev/src/, $(SHADOWSOCKS_SOURCES))
 LOCAL_CFLAGS    := -Wall -fno-strict-aliasing -DMODULE_LOCAL \
 					-DUSE_CRYPTO_MBEDTLS -DHAVE_CONFIG_H \
@@ -276,6 +276,28 @@ LOCAL_STATIC_LIBRARIES := libev libmbedtls libipset libcork libbloom \
 LOCAL_LDLIBS := -llog
 
 include $(BUILD_SHARED_EXECUTABLE)
+
+
+########################################################
+## ss-local
+########################################################
+
+include $(CLEAR_VARS)
+
+SRELAY_SOURCES := lib_ip_relay.c ip_relay.c
+
+LOCAL_MODULE    := ss-local
+LOCAL_SRC_FILES := $(addprefix iprelay/, $(SRELAY_SOURCES))
+LOCAL_CFLAGS    := -Wall -O2 -fno-strict-aliasing -D_ANDROID \
+                   -I$(LOCAL_PATH)/libancillary \
+                   -I$(LOCAL_PATH)/iprelay
+
+LOCAL_STATIC_LIBRARIES := libancillary
+
+LOCAL_LDLIBS := -llog
+
+include $(BUILD_SHARED_EXECUTABLE)
+
 
 ########################################################
 ## shadowsocks-libev tunnel
