@@ -336,6 +336,7 @@ object BaseService {
         val data: Data get() = instances[this]!!
 
         fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+			Log.e(tag, "BaseService onStartCommand")
             val data = data
             if (data.state != STOPPED) return Service.START_NOT_STICKY
             val profile = app.currentProfile

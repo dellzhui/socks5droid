@@ -112,13 +112,13 @@ class Profile : Serializable {
     var method: String = "aes-256-cfb"
 
     @DatabaseField
-    var route: String = "all"
+    var route: String = "bypass-lan"
 
     @DatabaseField
     var remoteDns: String = "172.28.254.73"
 
     @DatabaseField
-    var proxyApps: Boolean = false
+    var proxyApps: Boolean = true
 
     @DatabaseField
     var bypass: Boolean = false
@@ -130,7 +130,7 @@ class Profile : Serializable {
     var ipv6: Boolean = true
 
     @DatabaseField(dataType = DataType.LONG_STRING)
-    var individual: String = ""
+    var individual: String = "org.mozilla.firefox"
 
     @DatabaseField
     var tx: Long = 0

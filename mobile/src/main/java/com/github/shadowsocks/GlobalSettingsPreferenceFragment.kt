@@ -32,21 +32,27 @@ import com.github.shadowsocks.utils.DirectBoot
 import com.github.shadowsocks.utils.Key
 import com.github.shadowsocks.utils.TcpFastOpen
 import com.takisoft.fix.support.v7.preference.PreferenceFragmentCompatDividers
+import android.util.Log
 
 class GlobalSettingsPreferenceFragment : PreferenceFragmentCompatDividers() {
     override fun onCreatePreferencesFix(savedInstanceState: Bundle?, rootKey: String?) {
+		val TAG = "ShadowsocksFragment"
+		Log.e(TAG, "GlobalSettingsPreferenceFragment start")
         preferenceManager.preferenceDataStore = DataStore.publicStore
         DataStore.initGlobal()
         addPreferencesFromResource(R.xml.pref_global)
         val boot = findPreference(Key.isAutoConnect) as SwitchPreference
         boot.setOnPreferenceChangeListener { _, value ->
             BootReceiver.enabled = value as Boolean
+			Log.e(TAG, "BootReceiver.enabled is " + BootReceiver.enabled)
             true
         }
         boot.isChecked = BootReceiver.enabled
 
         val canToggleLocked = findPreference(Key.directBootAware)
         if (Build.VERSION.SDK_INT >= 24) canToggleLocked.setOnPreferenceChangeListener { _, newValue ->
+            Log.e(TAG, "app.directBootSupported is " + app.directBootSupported)
+            Log.e(TAG, "newValue is " + newValue)
             if (app.directBootSupported && newValue as Boolean) DirectBoot.update() else DirectBoot.clean()
             true
         } else canToggleLocked.parent!!.removePreference(canToggleLocked)

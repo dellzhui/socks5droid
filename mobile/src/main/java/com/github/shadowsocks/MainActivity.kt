@@ -213,6 +213,7 @@ class MainActivity : AppCompatActivity(), ShadowsocksConnection.Interface, Drawe
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+		Log.e(TAG, "MainActivity onCreate start")
         super.onCreate(savedInstanceState)
         setContentView(R.layout.layout_main)
         drawer = DrawerBuilder()
@@ -272,14 +273,24 @@ class MainActivity : AppCompatActivity(), ShadowsocksConnection.Interface, Drawe
 
         fab = findViewById(R.id.fab)
         fab.setOnClickListener {
+			Log.e(TAG, "state is " + state + ", CONNECTED is " + BaseService.CONNECTED)
             when {
-                state == BaseService.CONNECTED -> app.stopService()
+                state == BaseService.CONNECTED -> {
+					Log.e(TAG, "we will stop vpn service")
+					app.stopService()
+				}
                 BaseService.usingVpnMode -> {
+					Log.e(TAG, "BaseService.usingVpnMode is true")
                     val intent = VpnService.prepare(this)
+					Log.e(TAG, "intent is " + intent)
                     if (intent != null) startActivityForResult(intent, REQUEST_CONNECT)
                     else onActivityResult(REQUEST_CONNECT, Activity.RESULT_OK, null)
+					//VpnService.prepareAndAuthorize(this)
                 }
-                else -> app.startService()
+                else -> {
+					Log.e(TAG, "we will start vpn service")
+					app.startService()
+				}
             }
         }
 
@@ -289,6 +300,14 @@ class MainActivity : AppCompatActivity(), ShadowsocksConnection.Interface, Drawe
 
         val intent = this.intent
         if (intent != null) handleShareIntent(intent)
+		Log.e(TAG, "MainActivity onCreate end")
+		Log.e(TAG, "auto start vpn service")
+		Log.e(TAG, "state is " + state + ", CONNECTED is " + BaseService.CONNECTED)
+		val intent_auto = VpnService.prepare(this)
+		Log.e(TAG, "intent is " + intent_auto)
+		if (intent_auto != null) startActivityForResult(intent_auto, REQUEST_CONNECT)
+		else onActivityResult(REQUEST_CONNECT, Activity.RESULT_OK, null)
+		//VpnService.prepareAndAuthorize(this)
     }
 
     override fun onNewIntent(intent: Intent) {

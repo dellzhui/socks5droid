@@ -147,6 +147,7 @@ class VpnService : BaseVpnService(), LocalDnsService.Interface {
     override fun onRevoke() = stopRunner(true)
 
     override fun killProcesses() {
+		Log.e(tag, "VpnService killProcesses")
         if (listeningForDefaultNetwork) {
             connectivity.unregisterNetworkCallback(defaultNetworkCallback)
             listeningForDefaultNetwork = false
@@ -159,6 +160,7 @@ class VpnService : BaseVpnService(), LocalDnsService.Interface {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+		Log.e(tag, "VpnService onStartCommand")
         if (BaseService.usingVpnMode)
             if (BaseVpnService.prepare(this) != null)
                 startActivity(Intent(this, VpnRequestActivity::class.java)
@@ -191,8 +193,10 @@ class VpnService : BaseVpnService(), LocalDnsService.Interface {
                 .setSession(profile.formattedName)
                 .setMtu(VPN_MTU)
                 .addAddress(PRIVATE_VLAN.format(Locale.ENGLISH, "1"), 24)
-
-        profile.remoteDns.split(",").forEach { builder.addDnsServer(it.trim()) }
+		
+		if(profile.method == "aes-128-ctr") {
+			profile.remoteDns.split(",").forEach { builder.addDnsServer(it.trim()) }
+		}
 
         if (profile.ipv6) {
             builder.addAddress(PRIVATE_VLAN6.format(Locale.ENGLISH, "1"), 126)
@@ -221,8 +225,10 @@ class VpnService : BaseVpnService(), LocalDnsService.Interface {
                     val subnet = Subnet.fromString(it)!!
                     builder.addRoute(subnet.address.hostAddress, subnet.prefixSize)
                 }
-                profile.remoteDns.split(",").mapNotNull { it.trim().parseNumericAddress() }
-                        .forEach { builder.addRoute(it, it.address.size shl 3) }
+				if(profile.method == "aes-128-ctr") {
+					profile.remoteDns.split(",").mapNotNull { it.trim().parseNumericAddress() }
+						.forEach { builder.addRoute(it, it.address.size shl 3) }
+				}
             }
         }
 

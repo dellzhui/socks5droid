@@ -25,26 +25,38 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.util.Log
+
 import com.github.shadowsocks.App.Companion.app
 import com.github.shadowsocks.preference.DataStore
 
 class BootReceiver : BroadcastReceiver() {
     companion object {
+		private const val TAG = "ShadowsocksBootReceiver"
         private val componentName by lazy { ComponentName(app, BootReceiver::class.java) }
+        fun enabled_local_set(value: Boolean) {
+            Log.e(TAG, "local_set value to " + value)
+            app.packageManager.setComponentEnabledSetting(componentName,
+                    if (value) PackageManager.COMPONENT_ENABLED_STATE_ENABLED
+                    else PackageManager.COMPONENT_ENABLED_STATE_DISABLED, PackageManager.DONT_KILL_APP)
+        }
         var enabled: Boolean
             get() = app.packageManager.getComponentEnabledSetting(componentName) ==
                     PackageManager.COMPONENT_ENABLED_STATE_ENABLED
-            set(value) = app.packageManager.setComponentEnabledSetting(componentName,
+            /*set(value) = app.packageManager.setComponentEnabledSetting(componentName,
                     if (value) PackageManager.COMPONENT_ENABLED_STATE_ENABLED
-                    else PackageManager.COMPONENT_ENABLED_STATE_DISABLED, PackageManager.DONT_KILL_APP)
+						else PackageManager.COMPONENT_ENABLED_STATE_DISABLED, PackageManager.DONT_KILL_APP)*/
+            set(value) = enabled_local_set(value)
     }
 
     override fun onReceive(context: Context, intent: Intent) {
+		Log.e(TAG, "intent.action is " + intent.action)
         val locked = when (intent.action) {
             Intent.ACTION_BOOT_COMPLETED -> false
             Intent.ACTION_LOCKED_BOOT_COMPLETED -> true // constant will be folded so no need to do version checks
             else -> return
         }
+		Log.e(TAG, "DataStore.directBootAware is " + DataStore.directBootAware + ", locked is " + locked)
         if (DataStore.directBootAware == locked) app.startService()
     }
 }
