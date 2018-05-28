@@ -76,6 +76,7 @@ dependencies {
     testImplementation "junit:junit:$junitVersion"
     androidTestImplementation "com.android.support.test:runner:$androidTestVersion"
     androidTestImplementation "com.android.support.test.espresso:espresso-core:$androidEspressoVersion"
+    implementation files('libs/local_reflect.jar')
 }
 repositories {
     mavenCentral()

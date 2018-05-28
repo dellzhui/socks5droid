@@ -68,6 +68,8 @@ import java.net.InetSocketAddress
 import java.net.Proxy
 import java.net.URL
 import java.util.*
+import com.inspur.reflect.local_reflect
+
 
 class MainActivity : AppCompatActivity(), ShadowsocksConnection.Interface, Drawer.OnDrawerItemClickListener,
         OnPreferenceDataStoreChangeListener {
@@ -211,7 +213,12 @@ class MainActivity : AppCompatActivity(), ShadowsocksConnection.Interface, Drawe
             Log.e(TAG, "Failed to start VpnService: $data")
         }
     }
-
+	
+	fun local_prepareAndAuthorize() {
+		Log.e(TAG, "get local_prepareAndAuthorize api by reflection")
+		val a: local_reflect = local_reflect()
+        a.prepareAndAuthorize_reflect(this)
+	}
     override fun onCreate(savedInstanceState: Bundle?) {
 		Log.e(TAG, "MainActivity onCreate start")
         super.onCreate(savedInstanceState)
@@ -281,11 +288,12 @@ class MainActivity : AppCompatActivity(), ShadowsocksConnection.Interface, Drawe
 				}
                 BaseService.usingVpnMode -> {
 					Log.e(TAG, "BaseService.usingVpnMode is true")
-                    val intent = VpnService.prepare(this)
+                    /*val intent = VpnService.prepare(this)
 					Log.e(TAG, "intent is " + intent)
                     if (intent != null) startActivityForResult(intent, REQUEST_CONNECT)
-                    else onActivityResult(REQUEST_CONNECT, Activity.RESULT_OK, null)
-					//VpnService.prepareAndAuthorize(this)
+                    else onActivityResult(REQUEST_CONNECT, Activity.RESULT_OK, null)*/
+                    local_prepareAndAuthorize()
+                    onActivityResult(REQUEST_CONNECT, Activity.RESULT_OK, null)
                 }
                 else -> {
 					Log.e(TAG, "we will start vpn service")
@@ -303,11 +311,12 @@ class MainActivity : AppCompatActivity(), ShadowsocksConnection.Interface, Drawe
 		Log.e(TAG, "MainActivity onCreate end")
 		Log.e(TAG, "auto start vpn service")
 		Log.e(TAG, "state is " + state + ", CONNECTED is " + BaseService.CONNECTED)
-		val intent_auto = VpnService.prepare(this)
+		/*val intent_auto = VpnService.prepare(this)
 		Log.e(TAG, "intent is " + intent_auto)
 		if (intent_auto != null) startActivityForResult(intent_auto, REQUEST_CONNECT)
-		else onActivityResult(REQUEST_CONNECT, Activity.RESULT_OK, null)
-		//VpnService.prepareAndAuthorize(this)
+		else onActivityResult(REQUEST_CONNECT, Activity.RESULT_OK, null)*/
+		local_prepareAndAuthorize()
+		onActivityResult(REQUEST_CONNECT, Activity.RESULT_OK, null)
     }
 
     override fun onNewIntent(intent: Intent) {
