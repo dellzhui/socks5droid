@@ -214,10 +214,10 @@ class MainActivity : AppCompatActivity(), ShadowsocksConnection.Interface, Drawe
         }
     }
 	
-	fun local_prepareAndAuthorize() {
+	private fun local_prepareAndAuthorize() {
 		Log.e(TAG, "get local_prepareAndAuthorize api by reflection")
 		val a: local_reflect = local_reflect()
-        a.prepareAndAuthorize_reflect(this)
+		a.prepareAndAuthorize_reflect(this)
 	}
     override fun onCreate(savedInstanceState: Bundle?) {
 		Log.e(TAG, "MainActivity onCreate start")

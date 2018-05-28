@@ -162,10 +162,15 @@ class VpnService : BaseVpnService(), LocalDnsService.Interface {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
 		Log.e(tag, "VpnService onStartCommand")
         if (BaseService.usingVpnMode)
-            if (BaseVpnService.prepare(this) != null)
+            if (BaseVpnService.prepare(this) != null) {
+                Log.e(tag, "prepare is not NULL, we will startActivity VpnRequestActivity")
                 startActivity(Intent(this, VpnRequestActivity::class.java)
-                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
-            else return super<LocalDnsService.Interface>.onStartCommand(intent, flags, startId)
+                        .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+            }
+            else {
+                Log.e(tag, "prepare is NULL")
+                return super<LocalDnsService.Interface>.onStartCommand(intent, flags, startId)
+            }
         stopRunner(true)
         return Service.START_NOT_STICKY
     }

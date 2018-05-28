@@ -150,7 +150,7 @@
         <receiver android:name=".BootReceiver"
                   android:process=":bg"
                   android:directBootAware="true"
-                  android:enabled="false">
+                  android:enabled="true">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED"/>
                 <action android:name="android.intent.action.LOCKED_BOOT_COMPLETED" />
