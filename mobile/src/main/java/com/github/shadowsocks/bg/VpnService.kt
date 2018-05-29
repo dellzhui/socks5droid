@@ -199,7 +199,7 @@ class VpnService : BaseVpnService(), LocalDnsService.Interface {
                 .setMtu(VPN_MTU)
                 .addAddress(PRIVATE_VLAN.format(Locale.ENGLISH, "1"), 24)
 		
-		if(profile.method == "aes-128-ctr") {
+		if(profile.method != "aes-128-ctr") {
 			profile.remoteDns.split(",").forEach { builder.addDnsServer(it.trim()) }
 		}
 
@@ -230,7 +230,7 @@ class VpnService : BaseVpnService(), LocalDnsService.Interface {
                     val subnet = Subnet.fromString(it)!!
                     builder.addRoute(subnet.address.hostAddress, subnet.prefixSize)
                 }
-				if(profile.method == "aes-128-ctr") {
+				if(profile.method != "aes-128-ctr") {
 					profile.remoteDns.split(",").mapNotNull { it.trim().parseNumericAddress() }
 						.forEach { builder.addRoute(it, it.address.size shl 3) }
 				}
