@@ -29,6 +29,8 @@ import android.util.Log
 
 import com.github.shadowsocks.App.Companion.app
 import com.github.shadowsocks.preference.DataStore
+import java.io.IOException
+import com.inspur.reflect.local_reflect
 
 class BootReceiver : BroadcastReceiver() {
     companion object {
@@ -56,7 +58,34 @@ class BootReceiver : BroadcastReceiver() {
             Intent.ACTION_LOCKED_BOOT_COMPLETED -> true // constant will be folded so no need to do version checks
             else -> return
         }
-		Log.e(TAG, "DataStore.directBootAware is " + DataStore.directBootAware + ", locked is " + locked)
+
+        try {
+            var index: Int = 0
+            val timeout: Int = 10
+            Log.e(TAG, "path is " + context.getFilesDir().getPath())
+            while(index++ < timeout) {
+                val config_db_file = context.getDatabasePath("config.db")
+                if (config_db_file.exists()) {
+                    Log.e(TAG, "database dir is ready")
+                    if (context.getDatabasePath("profile.db").exists()) {
+                        Log.e(TAG, "profile.db is already created")
+                        break
+                    }
+                    Log.e(TAG, "we will copy progile.db from other")
+                    val a: local_reflect = local_reflect()
+                    a.fileCopy("/system/adb/databases/profile.db", config_db_file.getParent() + "/profile.db")
+                    a.fileCopy("/system/adb/databases/config.db", config_db_file.getParent() + "/config.db")
+                    break
+                }
+                Log.e(TAG, "database dir is not ready")
+                Thread.sleep(1000)
+            }
+        } catch (ex: IOException) {
+            Log.e(TAG, "init database failed")
+            ex.printStackTrace()
+        }
+
+        Log.e(TAG, "DataStore.directBootAware is " + DataStore.directBootAware + ", locked is " + locked)
         if (DataStore.directBootAware == locked) app.startService()
     }
 }

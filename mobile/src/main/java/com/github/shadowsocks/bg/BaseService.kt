@@ -342,6 +342,7 @@ object BaseService {
             val profile = app.currentProfile
             this as Context
             if (profile == null) {
+                Log.e(tag, "profile is null")
                 data.notification = createNotification("")  // gracefully shutdown: https://stackoverflow.com/questions/47337857/context-startforegroundservice-did-not-then-call-service-startforeground-eve
                 stopRunner(true, getString(R.string.profile_empty))
                 return Service.START_NOT_STICKY
