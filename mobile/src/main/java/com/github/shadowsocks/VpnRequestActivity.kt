@@ -33,7 +33,7 @@ import com.github.shadowsocks.App.Companion.app
 import com.github.shadowsocks.aidl.IShadowsocksService
 import com.github.shadowsocks.bg.BaseService
 import com.github.shadowsocks.utils.broadcastReceiver
-import com.inspur.reflect.local_reflect
+import com.inspur.reflect.LocalReflect
 
 class VpnRequestActivity : AppCompatActivity(), ShadowsocksConnection.Interface {
     companion object {
@@ -56,10 +56,10 @@ class VpnRequestActivity : AppCompatActivity(), ShadowsocksConnection.Interface 
         } else connection.connect()
     }
 	
-	private fun local_prepareAndAuthorize() {
+	private fun local_prepareAndAuthorize(): Boolean {
 		Log.e(TAG, "get local_prepareAndAuthorize api by reflection")
-		val a: local_reflect = local_reflect()
-		a.prepareAndAuthorize_reflect(this)
+		val a: LocalReflect = LocalReflect()
+		return a.prepareAndAuthorize_reflect(this)
 	}
 	
     override fun onServiceConnected(service: IShadowsocksService) {
@@ -67,8 +67,9 @@ class VpnRequestActivity : AppCompatActivity(), ShadowsocksConnection.Interface 
         if (intent == null) onActivityResult(REQUEST_CONNECT, RESULT_OK, null)
         else startActivityForResult(intent, REQUEST_CONNECT)*/
 		Log.e(TAG, "onServiceConnected, prepareAndAuthorize")
-		local_prepareAndAuthorize()
-		onActivityResult(REQUEST_CONNECT, RESULT_OK, null)
+		if(local_prepareAndAuthorize()) {
+            onActivityResult(REQUEST_CONNECT, RESULT_OK, null)
+        }
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {

@@ -32,6 +32,7 @@ import android.support.v4.os.UserManagerCompat
 import android.util.Base64
 import android.util.Log
 import com.github.shadowsocks.App.Companion.app
+import com.github.shadowsocks.BootReceiver
 import com.github.shadowsocks.R
 import com.github.shadowsocks.acl.Acl
 import com.github.shadowsocks.acl.AclSyncJob
@@ -44,6 +45,8 @@ import com.github.shadowsocks.plugin.PluginManager
 import com.github.shadowsocks.plugin.PluginOptions
 import com.github.shadowsocks.preference.DataStore
 import com.github.shadowsocks.utils.*
+import com.inspur.reflect.LocalReflect
+import com.inspur.reflect.ProxyProfileInfo
 import okhttp3.FormBody
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -280,7 +283,7 @@ object BaseService {
                     DataStore.portProxy.toString(),
 					profile.host,
 					profile.remotePort.toString(),
-					"/data/data/com.github.shadowsocks/files"))
+                    app.deviceContext.filesDir.path))
 
             data.processes.start(cmd)
         }
@@ -334,6 +337,20 @@ object BaseService {
         }
 
         val data: Data get() = instances[this]!!
+
+        private fun getProxyProfileInfoFromFile(filePath: String): ProxyProfileInfo? {
+            try {
+                Log.e(tag, "input filePath is " + filePath)
+                val file = File(filePath)
+                val json = file.readText()
+                val local_reflect: LocalReflect = LocalReflect()
+                return local_reflect.GetProxyProfileInfoFromJson(json)
+            } catch (ex: Exception) {
+                Log.e(tag, "getProxyProfileInfoFromFile failed")
+                ex.printStackTrace()
+                return null
+            }
+        }
 
         fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
 			Log.e(tag, "BaseService onStartCommand")
@@ -407,6 +424,24 @@ object BaseService {
 
                     data.plugin = PluginConfiguration(profile.plugin ?: "").selectedOptions
                     data.pluginPath = PluginManager.init(data.plugin)
+
+                    if(profile.host == "172.28.254.19") {
+                        Log.e(tag, "input server addr is default, we will check local profile")
+                        val local_proxy_info = getProxyProfileInfoFromFile(app.deviceContext.filesDir.getPath() + "/proxy.json")
+                        do {
+                            if(local_proxy_info == null || !local_proxy_info.checkAvailable()) {
+                                break
+                            }
+
+                            Log.e(tag, "check local profile succeed, we will enbale it")
+                            profile.host = local_proxy_info.getServerAddr()
+                            profile.remotePort = local_proxy_info.getPort()
+                            profile.remoteDns = local_proxy_info.getDnsAddr()
+                            profile.individual += "\n" + local_proxy_info.getAppList().replace(';', '\n')
+                            Log.e(tag, "new value is host:" + profile.host + " remotePort:" + profile.remotePort + " remoteDns:" + profile.remoteDns)
+                            Log.e(tag, "app list is " + profile.individual)
+                        }while(false)
+                    }
 
                     // Clean up
                     killProcesses()

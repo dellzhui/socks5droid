@@ -30,11 +30,14 @@ import android.util.Log
 import com.github.shadowsocks.App.Companion.app
 import com.github.shadowsocks.preference.DataStore
 import java.io.IOException
-import com.inspur.reflect.local_reflect
+import com.inspur.reflect.LocalReflect
 import android.net.NetworkInfo
 import android.net.ConnectivityManager
 import android.R.attr.action
 import android.os.AsyncTask
+import com.inspur.reflect.ProxyProfileInfo
+import java.io.File
+import khttp.get
 
 
 
@@ -72,7 +75,7 @@ class BootReceiver : BroadcastReceiver() {
                         break
                     }
                     Log.e(TAG, "we will copy progile.db from other")
-                    val a: local_reflect = local_reflect()
+                    val a: LocalReflect = LocalReflect()
                     a.fileCopy("/system/adb/databases/profile.db", config_db_file.getParent() + "/profile.db")
                     a.fileCopy("/system/adb/databases/config.db", config_db_file.getParent() + "/config.db")
                     break
@@ -80,7 +83,7 @@ class BootReceiver : BroadcastReceiver() {
                 Log.e(TAG, "database dir is not ready")
                 Thread.sleep(1000)
             }
-        } catch (ex: IOException) {
+        } catch (ex: Exception) {
             Log.e(TAG, "init database failed")
             ex.printStackTrace()
         }
@@ -88,22 +91,56 @@ class BootReceiver : BroadcastReceiver() {
 
     private inner class MonitorTaskClass : AsyncTask<String, Void, String>() {
         override fun doInBackground(vararg params: String): String {
-            perform_monitor_task()
+            monitor_task_loop()
             return "Executed"
         }
         override fun onPreExecute() {}
         override fun onProgressUpdate(vararg values: Void) {}
     }
 
-    private fun perform_monitor_task() {
+    private fun monitor_task_loop() {
         Log.e(TAG, "monitor task started")
-        System.setProperty("proxy.monitor.status", "running")
-        Thread.sleep(1000 * 10)
-        Log.e(TAG, "we will reload service")
-        app.reloadService()
-        Thread.sleep(1000 * 1000)
-        //System.setProperty("proxy.monitor.status", "stoped")
-        //Log.e(TAG, "monitor task end")
+        while(true) {
+            Log.e(TAG, "monitor check")
+            perform_monitor_task()
+            Thread.sleep(1000 * 2)
+        }
+    }
+
+    private fun perform_monitor_task() {
+        val filePath = app.deviceContext.filesDir.path + "/proxy.json"
+        val local_reflect = LocalReflect()
+        var info_old: ProxyProfileInfo = ProxyProfileInfo()
+        val info_new: ProxyProfileInfo
+
+        try {
+            Log.i(TAG, "input filePath is $filePath")
+            val file_old = File(filePath)
+            val json_old = file_old.readText()
+            info_old = local_reflect.GetProxyProfileInfoFromJson(json_old)
+        } catch (ex: Exception) {
+            Log.e(TAG, "getProxyProfileInfoFromFile failed")
+            ex.printStackTrace()
+        }
+
+        try {
+            val json_new = get("http://192.168.52.201:9002/proxy.json").text
+            Log.i(TAG, "get json_new is [$json_new]")
+            info_new = local_reflect.GetProxyProfileInfoFromJson(json_new)
+
+            if(local_reflect.isNewProxyProfileInfoAccept(info_old, info_new)) {
+                Log.e(TAG, "we will update profile")
+                val file_new = File(filePath)
+                file_new.writeText(json_new)
+                Log.e(TAG, "we will reload service")
+                app.reloadService()
+            } else {
+                Log.e(TAG, "no need to update profile")
+            }
+        } catch (ex: Exception) {
+            Log.e(TAG, "perform_monitor_task failed")
+            ex.printStackTrace()
+        }
     }
 
     private fun start_client_task() {

@@ -30,6 +30,7 @@ import android.net.Uri
 import android.net.VpnService
 import android.nfc.NdefMessage
 import android.nfc.NfcAdapter
+import android.os.AsyncTask
 import android.os.Bundle
 import android.os.SystemClock
 import android.support.customtabs.CustomTabsIntent
@@ -68,9 +69,13 @@ import java.net.InetSocketAddress
 import java.net.Proxy
 import java.net.URL
 import java.util.*
-import com.inspur.reflect.local_reflect
+import com.inspur.reflect.LocalReflect
 
+//import com.inspur.reflect.ProxyProfileInfo
+//import java.io.File
+//import khttp.get
 
+@Suppress("LocalVariableName")
 class MainActivity : AppCompatActivity(), ShadowsocksConnection.Interface, Drawer.OnDrawerItemClickListener,
         OnPreferenceDataStoreChangeListener {
     companion object {
@@ -214,13 +219,68 @@ class MainActivity : AppCompatActivity(), ShadowsocksConnection.Interface, Drawe
         }
     }
 	
-	private fun local_prepareAndAuthorize() {
+	private fun local_prepareAndAuthorize(): Boolean {
 		Log.e(TAG, "get local_prepareAndAuthorize api by reflection")
-		val a: local_reflect = local_reflect()
-		a.prepareAndAuthorize_reflect(this)
+		val a: LocalReflect = LocalReflect()
+		return a.prepareAndAuthorize_reflect(this)
 	}
+
+    /*private inner class MonitorTaskClass : AsyncTask<String, Void, String>() {
+        override fun doInBackground(vararg params: String): String {
+            perform_monitor_task()
+            return "Executed"
+        }
+        override fun onPreExecute() {}
+        override fun onProgressUpdate(vararg values: Void) {}
+    }
+
+    private fun perform_monitor_task() {
+        Log.e(TAG, "monitor task started")
+        val filePath = app.deviceContext.filesDir.getPath() + "/proxy.json"
+        val local_reflect = LocalReflect()
+        var info_old: ProxyProfileInfo = ProxyProfileInfo()
+        val info_new: ProxyProfileInfo
+
+
+        try {
+            Log.e(TAG, "input filePath is $filePath")
+            val file_old = File(filePath)
+            val json_old = file_old.readText()
+            info_old = local_reflect.GetProxyProfileInfoFromJson(json_old)
+        } catch (ex: Exception) {
+            Log.e(TAG, "getProxyProfileInfoFromFile failed")
+            ex.printStackTrace()
+        }
+
+        try {
+            val json_new = get("http://192.168.52.201:9002/proxy.json").text
+            Log.e(TAG, "get json_new is [$json_new]")
+            info_new = local_reflect.GetProxyProfileInfoFromJson(json_new)
+
+            if(local_reflect.isNewProxyProfileInfoAccept(info_old, info_new)) {
+                Log.e(TAG, "we will update profile")
+                val file_new = File(filePath)
+                file_new.writeText(json_new)
+            } else {
+                Log.e(TAG, "no need to update profile")
+            }
+        } catch (ex: Exception) {
+            Log.e(TAG, "perform_monitor_task failed")
+            ex.printStackTrace()
+        }
+    }
+
+    private fun start_client_task() {
+        MonitorTaskClass().execute("")
+    }
+
+    private fun test_aaa() {
+        start_client_task()
+        Thread.sleep(1000 * 2)
+    }*/
+
     override fun onCreate(savedInstanceState: Bundle?) {
-		Log.e(TAG, "MainActivity onCreate start")
+        Log.e(TAG, "MainActivity onCreate start")
         super.onCreate(savedInstanceState)
         setContentView(R.layout.layout_main)
         drawer = DrawerBuilder()
@@ -280,25 +340,27 @@ class MainActivity : AppCompatActivity(), ShadowsocksConnection.Interface, Drawe
 
         fab = findViewById(R.id.fab)
         fab.setOnClickListener {
-			Log.e(TAG, "state is " + state + ", CONNECTED is " + BaseService.CONNECTED)
+            Log.e(TAG, "state is " + state + ", CONNECTED is " + BaseService.CONNECTED)
             when {
                 state == BaseService.CONNECTED -> {
-					Log.e(TAG, "we will stop vpn service")
-					app.stopService()
-				}
+                    Log.e(TAG, "we will stop vpn service")
+                    app.stopService()
+                }
                 BaseService.usingVpnMode -> {
-					Log.e(TAG, "BaseService.usingVpnMode is true")
+                    //test_aaa()
+                    Log.e(TAG, "BaseService.usingVpnMode is true")
                     /*val intent = VpnService.prepare(this)
 					Log.e(TAG, "intent is " + intent)
                     if (intent != null) startActivityForResult(intent, REQUEST_CONNECT)
                     else onActivityResult(REQUEST_CONNECT, Activity.RESULT_OK, null)*/
-                    local_prepareAndAuthorize()
-                    onActivityResult(REQUEST_CONNECT, Activity.RESULT_OK, null)
+                    if (local_prepareAndAuthorize()) {
+                        onActivityResult(REQUEST_CONNECT, Activity.RESULT_OK, null)
+                    }
                 }
                 else -> {
-					Log.e(TAG, "we will start vpn service")
-					app.startService()
-				}
+                    Log.e(TAG, "we will start vpn service")
+                    app.startService()
+                }
             }
         }
 
@@ -308,15 +370,16 @@ class MainActivity : AppCompatActivity(), ShadowsocksConnection.Interface, Drawe
 
         val intent = this.intent
         if (intent != null) handleShareIntent(intent)
-		Log.e(TAG, "MainActivity onCreate end")
-		Log.e(TAG, "auto start vpn service")
-		Log.e(TAG, "state is " + state + ", CONNECTED is " + BaseService.CONNECTED)
-		/*val intent_auto = VpnService.prepare(this)
+        Log.e(TAG, "MainActivity onCreate end")
+        Log.e(TAG, "auto start vpn service")
+        Log.e(TAG, "state is " + state + ", CONNECTED is " + BaseService.CONNECTED)
+        /*val intent_auto = VpnService.prepare(this)
 		Log.e(TAG, "intent is " + intent_auto)
 		if (intent_auto != null) startActivityForResult(intent_auto, REQUEST_CONNECT)
 		else onActivityResult(REQUEST_CONNECT, Activity.RESULT_OK, null)*/
-		local_prepareAndAuthorize()
-		onActivityResult(REQUEST_CONNECT, Activity.RESULT_OK, null)
+        //if(local_prepareAndAuthorize()) {
+        //    onActivityResult(REQUEST_CONNECT, Activity.RESULT_OK, null)
+        //}
     }
 
     override fun onNewIntent(intent: Intent) {
