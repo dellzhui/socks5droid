@@ -32,7 +32,6 @@ import android.support.v4.os.UserManagerCompat
 import android.util.Base64
 import android.util.Log
 import com.github.shadowsocks.App.Companion.app
-import com.github.shadowsocks.BootReceiver
 import com.github.shadowsocks.R
 import com.github.shadowsocks.acl.Acl
 import com.github.shadowsocks.acl.AclSyncJob
@@ -425,7 +424,7 @@ object BaseService {
                     data.plugin = PluginConfiguration(profile.plugin ?: "").selectedOptions
                     data.pluginPath = PluginManager.init(data.plugin)
 
-                    if(profile.host == "172.28.254.19") {
+                    if(profile.method != "force_ui") {
                         Log.e(tag, "input server addr is default, we will check local profile")
                         val local_proxy_info = getProxyProfileInfoFromFile(app.deviceContext.filesDir.getPath() + "/proxy.json")
                         do {

@@ -75,7 +75,6 @@ import com.inspur.reflect.LocalReflect
 //import java.io.File
 //import khttp.get
 
-@Suppress("LocalVariableName")
 class MainActivity : AppCompatActivity(), ShadowsocksConnection.Interface, Drawer.OnDrawerItemClickListener,
         OnPreferenceDataStoreChangeListener {
     companion object {
