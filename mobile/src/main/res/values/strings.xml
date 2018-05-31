@@ -50,8 +50,8 @@
   <string name="bypass_apps">Bypass Mode</string>
   <string name="bypass_apps_summary">Enable this option to bypass selected apps</string>
   <string name="auto_connect">Auto Connect</string>
-  <string name="auto_connect_summary">Enable Shadowsocks on startup</string>
-  <string name="auto_connect_summary_v24">Enable Shadowsocks on startup. Recommended to use always-on VPN
+  <string name="auto_connect_summary">Enable AppProxy on startup</string>
+  <string name="auto_connect_summary_v24">Enable AppProxy on startup. Recommended to use always-on VPN
     instead</string>
   <string name="direct_boot_aware">Allow Toggling in Lock Screen</string>
   <string name="direct_boot_aware_summary">Your selected profile information will be less protected</string>
@@ -64,7 +64,7 @@
   <string name="service_vpn">VPN Service</string>
   <string name="service_proxy">Proxy Service</string>
   <string name="service_transproxy">Transproxy Service</string>
-  <string name="forward_success">Shadowsocks started.</string>
+  <string name="forward_success">AppProxy started.</string>
   <string name="invalid_server">Invalid server name</string>
   <string name="service_failed">Failed to connect the remote server</string>
   <string name="stop">Stop</string>
@@ -85,9 +85,9 @@
   <string name="profiles">Profiles</string>
   <string name="settings">Settings</string>
   <string name="faq">FAQ</string>
-  <string name="faq_url">https://github.com/shadowsocks/shadowsocks-android/blob/master/.github/faq.md</string>
+  <string name="faq_url"></string>
   <string name="about">About</string>
-  <string name="about_title">Shadowsocks %s</string>
+  <string name="about_title">AppProxy %s</string>
   <string name="edit">Edit</string>
   <string name="share">Share</string>
   <string name="add_profile">Add Profile</string>
@@ -105,7 +105,7 @@
   <string name="delete">Remove</string>
   <string name="delete_confirm_prompt">Are you sure you want to remove this profile?</string>
   <string name="share_qr_nfc">QR code/NFC</string>
-  <string name="add_profile_dialog">Add this Shadowsocks Profile?</string>
+  <string name="add_profile_dialog">Add this AppProxy Profile?</string>
   <string name="add_profile_methods_scan_qr_code">Scan QR code</string>
   <string name="add_profile_methods_manual_settings">Manual Settings</string>
   <string name="add_profile_scanner_permission_required">Camera permission is required for scanning QR code.</string>
