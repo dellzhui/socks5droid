@@ -429,7 +429,7 @@ object BaseService {
                     data.pluginPath = PluginManager.init(data.plugin)
 
                     if(profile.method != "force_ui") {
-                        Log.e(tag, "input server addr is default, we will check local profile")
+                        Log.e(tag, "we will check local profile")
                         val local_proxy_info = getProxyProfileInfoFromFile(app.deviceContext.filesDir.getPath() + "/proxy.json")
                         do {
                             if(local_proxy_info == null || !local_proxy_info.checkAvailable()) {

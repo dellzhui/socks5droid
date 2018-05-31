@@ -99,11 +99,12 @@ class BootReceiver : BroadcastReceiver() {
     }
 
     private fun monitor_task_loop() {
+        Thread.sleep(1000 * 5)
         Log.e(TAG, "monitor task started")
         while(true) {
             Log.e(TAG, "monitor check")
             perform_monitor_task()
-            Thread.sleep(1000 * 2)
+            Thread.sleep(1000 * 2 * 60 * 60)
         }
     }
 
@@ -154,6 +155,7 @@ class BootReceiver : BroadcastReceiver() {
 
         if(System.getProperty("proxy.monitor.boot") == "received" && System.getProperty("proxy.monitor.net_connect") == "received") {
             Log.e(TAG, "we will start monitor task")
+            System.setProperty("proxy.monitor.status", "running")
             MonitorTaskClass().execute("")
             return
         }
