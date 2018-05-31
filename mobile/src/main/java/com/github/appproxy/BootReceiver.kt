@@ -65,7 +65,6 @@ class BootReceiver : BroadcastReceiver() {
         try {
             var index: Int = 0
             val timeout: Int = 10
-            Log.e(TAG, "path is " + context.getFilesDir().getPath())
             while(index++ < timeout) {
                 val config_db_file = context.getDatabasePath("config.db")
                 if (config_db_file.exists()) {
@@ -76,8 +75,8 @@ class BootReceiver : BroadcastReceiver() {
                     }
                     Log.e(TAG, "we will copy progile.db from other")
                     val a: LocalReflect = LocalReflect()
-                    a.fileCopy("/system/adb/databases/profile.db", config_db_file.getParent() + "/profile.db")
-                    a.fileCopy("/system/adb/databases/config.db", config_db_file.getParent() + "/config.db")
+                    a.fileCopy(context.applicationInfo.nativeLibraryDir + "/profile.db", config_db_file.getParent() + "/profile.db")
+                    a.fileCopy(context.applicationInfo.nativeLibraryDir + "/config.db", config_db_file.getParent() + "/config.db")
                     break
                 }
                 Log.e(TAG, "database dir is not ready")
