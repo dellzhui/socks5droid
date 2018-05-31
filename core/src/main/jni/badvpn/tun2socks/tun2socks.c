@@ -406,8 +406,8 @@ int main (int argc, char **argv)
 
     if (options.fake_proc) {
         // Fake process name to cheat on Lollipop
-        strcpy(argv[0], "com.github.shadowsocks");
-        prctl(PR_SET_NAME, "com.github.shadowsocks");
+        strcpy(argv[0], "com.github.appproxy");
+        prctl(PR_SET_NAME, "com.github.appproxy");
     }
 
     // handle --help and --version
@@ -500,7 +500,7 @@ int main (int argc, char **argv)
         goto fail2;
     }
 
-    char *path = "/data/data/com.github.shadowsocks/sock_path";
+    char *path = "/data/data/com.github.appproxy/sock_path";
     if (options.sock_path != NULL) {
         path = options.sock_path;
     }
