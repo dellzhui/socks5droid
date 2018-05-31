@@ -200,7 +200,14 @@ class VpnService : BaseVpnService(), LocalDnsService.Interface {
                 .addAddress(PRIVATE_VLAN.format(Locale.ENGLISH, "1"), 24)
 		
 		if(profile.method != "bypass_dns") {
-			profile.remoteDns.split(",").forEach { builder.addDnsServer(it.trim()) }
+			profile.remoteDns.split(",").forEach {
+                try {
+                    builder.addDnsServer(it.trim())
+                } catch (ex: Exception) {
+                    Log.e(tag, "addDnsServer failed")
+                    ex.printStackTrace()
+                }
+            }
 		}
 
         if (profile.ipv6) {

@@ -239,9 +239,13 @@ object BaseService {
                     false
                 } else true
         fun forceLoad() {
+            Log.e(tag, "we will force load service")
             val profile = app.currentProfile
                     ?: return stopRunner(true, (this as Context).getString(R.string.profile_empty))
-            if (!checkProfile(profile)) return
+            if (!checkProfile(profile)) {
+                Log.e(tag, "checkProfile failed")
+                return
+            }
             val s = data.state
             when (s) {
                 STOPPED -> startRunner()
