@@ -280,14 +280,12 @@ object BaseService {
             if (profile.udpdns) cmd += "-D"
 
             if (TcpFastOpen.sendEnabled) cmd += "--fast-open"*/
-			
-			val cmd = buildAdditionalArguments(arrayListOf(
-					File((this as Context).applicationInfo.nativeLibraryDir, Executable.SS_LOCAL).absolutePath,
-                    DataStore.portProxy.toString(),
-					profile.host,
-					profile.remotePort.toString(),
-                    app.deviceContext.filesDir.path))
 
+            val cmd = arrayListOf(File((this as Context).applicationInfo.nativeLibraryDir, Executable.SS_LOCAL).absolutePath,
+                    DataStore.portProxy.toString(),
+                    profile.host,
+                    profile.remotePort.toString(),
+                    app.deviceContext.filesDir.path)
             data.processes.start(cmd)
         }
 
