@@ -514,6 +514,7 @@ void UdpGwClient_Free (UdpGwClient *o)
 
 void UdpGwClient_SubmitPacket (UdpGwClient *o, BAddr local_addr, BAddr remote_addr, int is_dns, const uint8_t *data, int data_len)
 {
+    BLog(BLOG_NOTICE, "UdpGwClient_SubmitPacket enter\n");
     DebugObject_Access(&o->d_obj);
     ASSERT(local_addr.type == BADDR_TYPE_IPV4 || local_addr.type == BADDR_TYPE_IPV6)
     ASSERT(remote_addr.type == BADDR_TYPE_IPV4 || remote_addr.type == BADDR_TYPE_IPV6)
@@ -527,6 +528,7 @@ void UdpGwClient_SubmitPacket (UdpGwClient *o, BAddr local_addr, BAddr remote_ad
     
     // lookup connection
     struct UdpGwClient_connection *con = find_connection_by_conaddr(o, conaddr);
+    BLog(BLOG_NOTICE, "con is %p\n", con);
     
     uint8_t flags = 0;
 
@@ -556,6 +558,7 @@ void UdpGwClient_SubmitPacket (UdpGwClient *o, BAddr local_addr, BAddr remote_ad
 
 int UdpGwClient_ConnectServer (UdpGwClient *o, StreamPassInterface *send_if, StreamRecvInterface *recv_if)
 {
+    BLog(BLOG_NOTICE, "UdpGwClient_ConnectServer enter\n");
     DebugObject_Access(&o->d_obj);
     ASSERT(!o->have_server)
     

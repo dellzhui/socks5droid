@@ -33,14 +33,16 @@
 // maximum number of udpgw connections
 #define DEFAULT_UDPGW_MAX_CONNECTIONS 256
 
+#define DEFAULT_UDPGW_UDP_MTU (65520 - 22)
+
 // udpgw per-connection send buffer size, in number of packets
 #define DEFAULT_UDPGW_CONNECTION_BUFFER_SIZE 8
 
 // udpgw reconnect time after connection fails
-#define UDPGW_RECONNECT_TIME 5000
+#define UDPGW_RECONNECT_TIME 86400000
 
 // udpgw keepalive sending interval
-#define UDPGW_KEEPALIVE_TIME 10000
+#define UDPGW_KEEPALIVE_TIME 86400000
 
 // option to override the destination addresses to give the SOCKS server
 //#define OVERRIDE_DEST_ADDR "10.111.0.2:2000"

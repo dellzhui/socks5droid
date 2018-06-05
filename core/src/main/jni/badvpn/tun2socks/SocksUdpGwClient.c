@@ -385,6 +385,8 @@ static void free_socks (SocksUdpGwClient *o)
     BSocksClient_Free(&o->socks_client);
 
     // set have no SOCKS
+    o->b_connected = 0;
+    BLog(BLOG_NOTICE, "%s %d:o->b_connected set to %d\n", __FUNCTION__, __LINE__, o->b_connected);
     o->have_socks = 0;
 }
 
@@ -405,11 +407,36 @@ static void try_connect (SocksUdpGwClient *o)
     // set SOCKS not up
     o->socks_up = 0;
 
+    o->b_connected = 1;
+    BLog(BLOG_NOTICE, "%s %d:o->b_connected set to %d\n", __FUNCTION__, __LINE__, o->b_connected);
+
     return;
 
 fail0:
     // set reconnect timer
     BReactor_SetTimer(o->reactor, &o->reconnect_timer);
+}
+
+static void check_and_init_client(SocksUdpGwClient *o)
+{
+    BLog(BLOG_NOTICE, "o->b_connected is %d\n", o->b_connected);
+    pthread_mutex_lock(&o->mutex);
+    if(o->b_connected == 1) {
+        BLog(BLOG_NOTICE, "already connected\n");
+        pthread_mutex_unlock(&o->mutex);
+        return ;
+    }
+
+    if (!BSocksClient_Init(&o->socks_client, o->socks_server_addr, o->auth_info, o->num_auth_info, o->remote_udpgw_addr, (BSocksClient_handler)socks_client_handler, o, o->reactor)) {
+        BLog(BLOG_ERROR, "BSocksClient_Init failed");
+        o->b_connected = 0;
+        BLog(BLOG_NOTICE, "%s %d:o->b_connected set to %d\n", __FUNCTION__, __LINE__, o->b_connected);
+        pthread_mutex_unlock(&o->mutex);
+        return ;
+    }
+    o->b_connected = 1;
+    BLog(BLOG_NOTICE, "%s %d:o->b_connected set to %d\n", __FUNCTION__, __LINE__, o->b_connected);
+    pthread_mutex_unlock(&o->mutex);
 }
 
 static void reconnect_timer_handler (SocksUdpGwClient *o)
@@ -418,6 +445,7 @@ static void reconnect_timer_handler (SocksUdpGwClient *o)
     ASSERT(!o->have_socks)
 
     // try connecting
+    BLog(BLOG_NOTICE, "reconnect_timer_handler\n");
     try_connect(o);
 }
 
@@ -448,6 +476,8 @@ static void socks_client_handler (SocksUdpGwClient *o, int event)
             free_socks(o);
 
             // set reconnect timer
+            o->b_connected = 0;
+            BLog(BLOG_NOTICE, "%s %d:o->b_connected set to %d\n", __FUNCTION__, __LINE__, o->b_connected);
             BReactor_SetTimer(o->reactor, &o->reconnect_timer);
         } break;
 
@@ -459,6 +489,8 @@ static void socks_client_handler (SocksUdpGwClient *o, int event)
             free_socks(o);
 
             // set reconnect timer
+            o->b_connected = 0;
+            BLog(BLOG_NOTICE, "%s %d:o->b_connected set to %d\n", __FUNCTION__, __LINE__, o->b_connected);
             BReactor_SetTimer(o->reactor, &o->reconnect_timer);
         } break;
 
@@ -478,6 +510,8 @@ static void udpgw_handler_servererror (SocksUdpGwClient *o)
     free_socks(o);
 
     // set reconnect timer
+    o->b_connected = 0;
+    BLog(BLOG_NOTICE, "%s %d:o->b_connected set to %d\n", __FUNCTION__, __LINE__, o->b_connected);
     BReactor_SetTimer(o->reactor, &o->reconnect_timer);
 }
 
@@ -530,11 +564,18 @@ int SocksUdpGwClient_Init (SocksUdpGwClient *o, int udp_mtu, int max_connections
     // init connections list
     LinkedList1_Init(&o->connections_list);
 #else
+    if(pthread_mutex_init(&o->mutex, NULL) != 0) {
+        BLog(BLOG_ERROR, "init mutex failed\n");
+        goto fail0;
+    }
+    BLog(BLOG_NOTICE, "init mutex succeed\n");
+
     // init udpgw client
     if (!UdpGwClient_Init(&o->udpgw_client, udp_mtu, max_connections, send_buffer_size, keepalive_time, o->reactor, o,
                           (UdpGwClient_handler_servererror)udpgw_handler_servererror,
                           (UdpGwClient_handler_received)udpgw_handler_received
     )) {
+        pthread_mutex_destroy(&o->mutex);
         goto fail0;
     }
 
@@ -543,9 +584,11 @@ int SocksUdpGwClient_Init (SocksUdpGwClient *o, int udp_mtu, int max_connections
 
     // set have no SOCKS
     o->have_socks = 0;
+    o->b_connected = 0;
+    BLog(BLOG_NOTICE, "%s %d:o->b_connected set to %d\n", __FUNCTION__, __LINE__, o->b_connected);
 
     // try connecting
-    try_connect(o);
+    //try_connect(o);
 #endif
 
     DebugObject_Init(&o->d_obj);
@@ -576,6 +619,7 @@ void SocksUdpGwClient_Free (SocksUdpGwClient *o)
 
     // free udpgw client
     UdpGwClient_Free(&o->udpgw_client);
+    pthread_mutex_destroy(&o->mutex);
 #endif
 }
 
@@ -616,6 +660,7 @@ void SocksUdpGwClient_SubmitPacket (SocksUdpGwClient *o, BAddr local_addr, BAddr
     }
 #else
     // submit to udpgw client
+    check_and_init_client(o);
     UdpGwClient_SubmitPacket(&o->udpgw_client, local_addr, remote_addr, is_dns, data, data_len);
 #endif
 }

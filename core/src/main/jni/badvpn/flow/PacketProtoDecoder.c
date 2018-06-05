@@ -63,7 +63,7 @@ void process_data (PacketProtoDecoder *enc)
         
         // check data length
         if (data_len > enc->output_mtu) {
-            BLog(BLOG_NOTICE, "error: packet too large");
+            BLog(BLOG_NOTICE, "error: packet too large, data_len is %d, enc->output_mtu is %d\n", data_len, enc->output_mtu);
             was_error = 1;
             break;
         }

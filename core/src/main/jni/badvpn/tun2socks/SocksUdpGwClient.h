@@ -45,6 +45,7 @@
 #else
 #include <udpgw_client/UdpGwClient.h>
 #include <socksclient/BSocksClient.h>
+#include <pthread.h>
 #endif
 
 typedef void (*SocksUdpGwClient_handler_received) (void *user, BAddr local_addr, BAddr remote_addr, const uint8_t *data, int data_len);
@@ -69,6 +70,8 @@ typedef struct {
     UdpGwClient udpgw_client;
     BTimer reconnect_timer;
     int have_socks;
+    int b_connected;
+    pthread_mutex_t mutex;
     BSocksClient socks_client;
     int socks_up;
 #endif

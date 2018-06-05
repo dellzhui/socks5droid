@@ -579,12 +579,15 @@ int main (int argc, char **argv)
                 udp_mtu = udp_ip6_mtu;
             }
         }
+        BLog(BLOG_NOTICE, "old udp_mtu is %d\n", udp_mtu);
         if (udp_mtu < 0) {
             udp_mtu = 0;
         }
+        udp_mtu = DEFAULT_UDPGW_UDP_MTU;
 
         // make sure our UDP payloads aren't too large for udpgw
         int udpgw_mtu = udpgw_compute_mtu(udp_mtu);
+        BLog(BLOG_NOTICE, "new udp_mtu is %d, udpgw_mtu is %d\n", udp_mtu, udpgw_mtu);
         if (udpgw_mtu < 0 || udpgw_mtu > PACKETPROTO_MAXPAYLOAD) {
             BLog(BLOG_ERROR, "device MTU is too large for UDP");
             goto fail4a;
@@ -1295,7 +1298,7 @@ void tcp_timer_handler (void *unused)
 {
     ASSERT(!quitting)
 
-    BLog(BLOG_DEBUG, "TCP timer");
+    //BLog(BLOG_DEBUG, "TCP timer");
 
     // schedule next timer
     // TODO: calculate timeout so we don't drift

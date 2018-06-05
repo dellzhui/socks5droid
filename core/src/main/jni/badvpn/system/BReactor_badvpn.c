@@ -382,7 +382,7 @@ static void wait_for_events (BReactor *bsys)
             }
         }
         
-        BLog(BLOG_DEBUG, "Calling epoll_wait");
+        //BLog(BLOG_DEBUG, "Calling epoll_wait");
         
         int waitres = epoll_wait(bsys->efd, bsys->epoll_results, BSYSTEM_MAX_RESULTS, (have_timeout ? timeout_rel_trunc : -1));
         if (waitres < 0) {
@@ -404,7 +404,7 @@ static void wait_for_events (BReactor *bsys)
                 bsys->epoll_results_num = waitres;
                 set_epoll_fd_pointers(bsys);
             } else {
-                BLog(BLOG_DEBUG, "epoll_wait timed out");
+                //BLog(BLOG_DEBUG, "epoll_wait timed out");
                 move_first_timers(bsys);
             }
             break;
@@ -787,7 +787,7 @@ int BReactor_Exec (BReactor *bsys)
             timer->state = TIMER_STATE_INACTIVE;
             
             // call handler
-            BLog(BLOG_DEBUG, "Dispatching timer");
+            //BLog(BLOG_DEBUG, "Dispatching timer");
             if (timer->is_small) {
                 timer->handler.smalll(timer);
             } else {
