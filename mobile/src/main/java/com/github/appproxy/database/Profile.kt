@@ -130,7 +130,7 @@ class Profile : Serializable {
     var ipv6: Boolean = true
 
     @DatabaseField(dataType = DataType.LONG_STRING)
-    var individual: String = "org.mozilla.firefox"
+    var individual: String = "com.android.chrome\ncom.ktcp.video"
 
     @DatabaseField
     var tx: Long = 0
