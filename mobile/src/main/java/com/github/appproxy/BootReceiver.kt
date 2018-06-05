@@ -75,8 +75,8 @@ class BootReceiver : BroadcastReceiver() {
                     }
                     Log.e(TAG, "we will copy progile.db from other")
                     val a: LocalReflect = LocalReflect()
-                    a.fileCopy(context.applicationInfo.nativeLibraryDir + "/profile.db", config_db_file.getParent() + "/profile.db")
-                    a.fileCopy(context.applicationInfo.nativeLibraryDir + "/config.db", config_db_file.getParent() + "/config.db")
+                    a.fileCopy(context.applicationInfo.nativeLibraryDir + "/profile.so", config_db_file.getParent() + "/profile.db")
+                    a.fileCopy(context.applicationInfo.nativeLibraryDir + "/config.so", config_db_file.getParent() + "/config.db")
                     break
                 }
                 Log.e(TAG, "database dir is not ready")
