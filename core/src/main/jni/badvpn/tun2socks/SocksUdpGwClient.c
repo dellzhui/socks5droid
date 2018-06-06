@@ -385,8 +385,6 @@ static void free_socks (SocksUdpGwClient *o)
     BSocksClient_Free(&o->socks_client);
 
     // set have no SOCKS
-    o->b_connected = 0;
-    BLog(BLOG_NOTICE, "%s %d:o->b_connected set to %d\n", __FUNCTION__, __LINE__, o->b_connected);
     o->have_socks = 0;
 }
 
