@@ -79,6 +79,8 @@ typedef struct _IPR_tcp_client_node {
     int                         client_port;
     SOCKET                      client_socket;
     SOCKET                      target_socket;
+	int                         send_to_target_retry_count;
+	int                         send_to_target_retry_count_max;
     time_t                      last_used_time;
 } IPR_tcp_client_node;
 
@@ -599,6 +601,8 @@ static int add_tcp_client( IPR_relay *relay, long client_ip, int client_port,
     node->client_socket      = tcp_client_socket;
     node->target_socket      = tcp_target_socket;
     node->last_used_time     = time( NULL );
+    node->send_to_target_retry_count = 0;
+    node->send_to_target_retry_count_max = IPR_TCP_CLIENT_SEND_TO_TARGET_RETRY_COUNT_MAX;
     node->next               = relay->tcp_client_list;
     relay->tcp_client_list = node;
 
@@ -807,10 +811,20 @@ static int forward_tcp_packets( IPR_relay *relay, fd_set *read_mask )
             }
             if ( send( tcp_client->target_socket, read_buffer, read_size, 0 ) < 0 )
             {
-                log_msg( relay, IPR_LL_WARNING, "tcp_send target failed(%d)! ignoring...",
-                         ERROR_STRING() ) ;
+                log_msg( relay, IPR_LL_WARNING, "tcp_send target failed(%d)! ignoring...", ERROR_STRING() ) ;
+                log_msg( relay, IPR_LL_WARNING, "send_to_target_retry_count is %d, send_to_target_retry_count_max is %d\n", tcp_client->send_to_target_retry_count, tcp_client->send_to_target_retry_count_max) ;
+                if(tcp_client->send_to_target_retry_count++ >= tcp_client->send_to_target_retry_count_max) {
+                    log_msg( relay, IPR_LL_ERROR, "send_to_target_retry_count pverflow, we will close client connection\n");
+                    if ( prev_tcp_client ) prev_tcp_client->next = tcp_client->next;
+                    else relay->tcp_client_list = tcp_client->next;
+                    closesocket ( tcp_client->client_socket );
+                    closesocket ( tcp_client->target_socket );
+                    free( tcp_client );
+                    tcp_client = ( prev_tcp_client ) ? prev_tcp_client->next : relay->tcp_client_list;
+                }
                 continue;
             }
+            tcp_client->send_to_target_retry_count = 0;
             tcp_client->last_used_time = time( NULL );
             monitor_tx += read_size;
             send_traffic_stat(monitor_tx, monitor_rx);

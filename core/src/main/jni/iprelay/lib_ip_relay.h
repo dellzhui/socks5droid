@@ -40,6 +40,7 @@ extern "C" {
  +---------------------------------------------------*/
 #define IPR_ANY_IP_ADDRESS      (-1)  /**< ipr any ip address */
 #define IPR_DEFAULT_TIMEOUT      86400 /**< default connection timeout in seconds (1 day) */
+#define IPR_TCP_CLIENT_SEND_TO_TARGET_RETRY_COUNT_MAX      5
 
 /*---------------------------------------------------
  |     Macros Definitions below this line
