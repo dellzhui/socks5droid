@@ -257,17 +257,34 @@ class VpnService : BaseVpnService(), LocalDnsService.Interface {
         val cmd = arrayListOf(File(applicationInfo.nativeLibraryDir, Executable.TUN2SOCKS).absolutePath,
                 "--netif-ipaddr", PRIVATE_VLAN.format(Locale.ENGLISH, "2"),
                 "--netif-netmask", "255.255.255.0",
-                "--socks-server-addr", "127.0.0.1:${DataStore.portProxy}",
                 "--tunfd", fd.toString(),
                 "--tunmtu", VPN_MTU.toString(),
                 "--sock-path", "sock_path",
                 "--loglevel", "3")
+
+        cmd += "--socks-server-addr"
+        when (profile.method) {
+            "disable_ip_relay" -> {
+                cmd += "${profile.host}:${profile.remotePort}"
+                when (profile.route) {
+                    Acl.ALL, Acl.BYPASS_CHN, Acl.CUSTOM_RULES -> {
+                        cmd += "--protect_sock_path"
+                        cmd += app.deviceContext.filesDir.path + "/protect_path"
+                    }
+                    else -> {
+                        Log.e(tag, "no need set protect_path")
+                    }
+                }
+            }
+            else -> cmd += "127.0.0.1:${DataStore.portProxy}"
+        }
+
         if (profile.ipv6) {
             cmd += "--netif-ip6addr"
             cmd += PRIVATE_VLAN6.format(Locale.ENGLISH, "2")
         }
         cmd += "--enable-udprelay"
-		var udpGwRemotePort = profile.remotePort + 1
+		val udpGwRemotePort = profile.remotePort + 1
 		cmd += "${profile.host}:${udpGwRemotePort}"
         if (!profile.udpdns) {
             cmd += "--dnsgw"

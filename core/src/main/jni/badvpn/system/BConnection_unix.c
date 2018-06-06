@@ -43,6 +43,11 @@
 
 #include <generated/blog_channel_BConnection.h>
 
+#define USE_IP_RELAY
+#ifndef USE_IP_RELAY
+#include <ancillary.h>
+#endif
+
 #define MAX_UNIX_SOCKET_PATH 200
 
 #define SEND_STATE_NOT_INITED 0
@@ -590,6 +595,68 @@ void BListener_Free (BListener *o)
     }
 }
 
+#ifndef USE_IP_RELAY
+static int protect_socket(int fd)
+{
+    static char *env_value = NULL;
+
+    if(env_value != NULL && *env_value == 0) {
+        BLog(BLOG_ERROR , "%s %d:env PROTECT_PATH not set\n", __FUNCTION__, __LINE__);
+        return 0;
+    }
+
+    if(env_value == NULL && ((env_value = getenv("PROTECT_PATH")) == NULL || *env_value == 0)) {
+        BLog(BLOG_ERROR , "%s %d:env PROTECT_PATH not set\n", __FUNCTION__, __LINE__);
+        env_value = "";
+        return 0;
+    }
+    BLog(BLOG_ERROR, "get PROTECT_PATH is [%s]\n", env_value);
+
+    int sock;
+    struct sockaddr_un addr;
+
+    if ((sock = socket(AF_UNIX, SOCK_STREAM, 0)) == -1) {
+        BLog(BLOG_ERROR, "[android] socket() failed: %s (socket fd = %d)\n", strerror(errno), sock);
+        return -1;
+    }
+
+    // Set timeout to 3s
+    struct timeval tv;
+    tv.tv_sec  = 3;
+    tv.tv_usec = 0;
+    setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, (char *)&tv, sizeof(struct timeval));
+    setsockopt(sock, SOL_SOCKET, SO_SNDTIMEO, (char *)&tv, sizeof(struct timeval));
+
+    memset(&addr, 0, sizeof(addr));
+    addr.sun_family = AF_UNIX;
+    strncpy(addr.sun_path, env_value, sizeof(addr.sun_path) - 1);
+
+    if (connect(sock, (struct sockaddr *)&addr, sizeof(addr)) == -1) {
+        BLog(BLOG_ERROR, "[android] connect() failed for protect_path: %s (socket fd = %d)\n",
+             strerror(errno), sock);
+        close(sock);
+        return -1;
+    }
+
+    if (ancil_send_fd(sock, fd)) {
+        BLog(BLOG_ERROR, "[android] ancil_send_fd");
+        close(sock);
+        return -1;
+    }
+
+    char ret = 0;
+
+    if (recv(sock, &ret, 1, 0) == -1) {
+        BLog(BLOG_ERROR, "[android] recv");
+        close(sock);
+        return -1;
+    }
+
+    close(sock);
+    return ret;
+}
+#endif
+
 int BConnector_InitFrom (BConnector *o, struct BLisCon_from from, BReactor *reactor, void *user,
                          BConnector_handler handler)
 {
@@ -639,6 +706,13 @@ int BConnector_InitFrom (BConnector *o, struct BLisCon_from from, BReactor *reac
             goto fail1;
         }
     }
+
+#ifndef USE_IP_RELAY
+    if(protect_socket(o->fd) == -1) {
+        BLog(BLOG_ERROR, "protect_socket failed\n");
+        goto fail2;
+    }
+#endif
     
     // set fd non-blocking
     if (!badvpn_set_nonblocking(o->fd)) {

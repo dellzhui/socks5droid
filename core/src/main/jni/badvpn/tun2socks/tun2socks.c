@@ -726,6 +726,7 @@ void print_help (const char *name)
         "        [--dnsgw <dns_gateway_address>]\n"
         "        [--pid <pid_file>]\n"
         "        [--sock-path <sock_path>]\n"
+		"        [--protect_sock_path <protect_sock_path>]\n"
 #else
         "        [--tundev <name>]\n"
 #endif
@@ -919,6 +920,14 @@ int parse_arguments (int argc, char *argv[])
                 return 0;
             }
             options.pid = argv[i + 1];
+            i++;
+        }
+		else if (!strcmp(arg, "--protect_sock_path")) {
+            if (1 >= argc - i) {
+                fprintf(stderr, "%s: requires an argument\n", arg);
+                return 0;
+            }
+			setenv("PROTECT_PATH", argv[i + 1], 1);
             i++;
         }
 #else
