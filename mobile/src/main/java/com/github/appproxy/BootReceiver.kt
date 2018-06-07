@@ -116,8 +116,11 @@ class BootReceiver : BroadcastReceiver() {
         try {
             Log.i(TAG, "input filePath is $filePath")
             val file_old = File(filePath)
-            val json_old = file_old.readText()
-            info_old = local_reflect.GetProxyProfileInfoFromJson(json_old)
+            if(file_old.exists()) {
+                info_old = local_reflect.GetProxyProfileInfoFromJson(file_old.readText())
+            } else {
+                Log.e(TAG, "${filePath} not exists")
+            }
         } catch (ex: Exception) {
             Log.e(TAG, "getProxyProfileInfoFromFile failed")
             ex.printStackTrace()
@@ -161,6 +164,45 @@ class BootReceiver : BroadcastReceiver() {
         Log.e(TAG, "we should start only after booting and network connected")
     }
 
+    private fun update_app_list(package_name : String) {
+        try {
+            Log.d(TAG, "input package_name is ${package_name}")
+            if("".equals(package_name)) {
+                Log.e(TAG, "input NULL")
+                return
+            }
+            val local_reflect = LocalReflect()
+            val json = File(app.deviceContext.filesDir.path + "/proxy.json").readText()
+            val info = local_reflect.GetProxyProfileInfoFromJson(json)
+            if(info.getAppList().indexOf(package_name) != -1) {
+                Log.d(TAG, "find ${package_name} in stored applist succeed, we will reload service")
+                app.reloadService()
+                return
+            } else {
+                Log.d(TAG, "can not find ${package_name} in stored applist, no need to update")
+            }
+        } catch (ex: Exception) {
+            Log.e(TAG, "update_app_list failed")
+            ex.printStackTrace()
+        }
+
+        try {
+            val profile = app.currentProfile
+            if(profile != null) {
+                if(profile.individual.indexOf(package_name) != -1) {
+                    Log.d(TAG, "find ${package_name} in currentProfile succeed, we will reload service")
+                    app.reloadService()
+                    return
+                } else {
+                    Log.d(TAG, "can not find ${package_name} in currentProfile, no need to update")
+                }
+            }
+        } catch (ex: Exception) {
+            Log.e(TAG, "update_app_list failed")
+            ex.printStackTrace()
+        }
+    }
+
     private fun handle_intent(context: Context, intent: Intent) {
         val action = intent.action
 
@@ -197,6 +239,21 @@ class BootReceiver : BroadcastReceiver() {
             } else {
                 Log.d(TAG, "no avaliable network")
             }
+            return
+        }
+
+        if(action.equals(Intent.ACTION_PACKAGE_ADDED)) {
+            val packageName = intent.data.schemeSpecificPart
+            Log.d(TAG, "add new package is [" + packageName + "]")
+            update_app_list(packageName)
+            return
+        }
+
+        if(action.equals(Intent.ACTION_PACKAGE_CHANGED)) {
+            val packageName = intent.data.schemeSpecificPart
+            Log.d(TAG, "change new package is [" + packageName + "]")
+            update_app_list(packageName)
+            return
         }
     }
 

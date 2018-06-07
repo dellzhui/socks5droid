@@ -343,6 +343,10 @@ object BaseService {
             try {
                 Log.e(tag, "input filePath is " + filePath)
                 val file = File(filePath)
+                if(!file.exists()) {
+                    Log.e(tag, "${filePath} not exists")
+                    return null
+                }
                 val json = file.readText()
                 val local_reflect: LocalReflect = LocalReflect()
                 return local_reflect.GetProxyProfileInfoFromJson(json)
