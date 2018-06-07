@@ -254,7 +254,18 @@ class VpnService : BaseVpnService(), LocalDnsService.Interface {
             listeningForDefaultNetwork = true
         }
 
-        val cmd = arrayListOf(File(applicationInfo.nativeLibraryDir, Executable.TUN2SOCKS).absolutePath,
+        val tun2socks_file = File(applicationInfo.nativeLibraryDir, Executable.TUN2SOCKS)
+        var tun2socks_file_path = tun2socks_file.absolutePath
+        if(!tun2socks_file.exists() || !tun2socks_file.canExecute()) {
+            val system_bin_tun2socks_file_path = "/system/bin/" + Executable.TUN2SOCKS
+            val system_bin_tun2socks_file = File(system_bin_tun2socks_file_path)
+            if(system_bin_tun2socks_file.exists() && system_bin_tun2socks_file.canExecute()) {
+                tun2socks_file_path = system_bin_tun2socks_file.absolutePath
+            }
+        }
+        Log.e(tag, "tun2socks_file_path is " + tun2socks_file_path)
+
+        val cmd = arrayListOf(tun2socks_file_path,
                 "--netif-ipaddr", PRIVATE_VLAN.format(Locale.ENGLISH, "2"),
                 "--netif-netmask", "255.255.255.0",
                 "--tunfd", fd.toString(),
