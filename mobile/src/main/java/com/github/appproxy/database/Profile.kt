@@ -100,7 +100,7 @@ class Profile : Serializable {
     var name: String? = ""
 
     @DatabaseField
-    var host: String = "172.28.254.19"
+    var host: String = "172.16.174.7"
 
     @DatabaseField
     var remotePort: Int = 9000
@@ -115,7 +115,7 @@ class Profile : Serializable {
     var route: String = "bypass-lan"
 
     @DatabaseField
-    var remoteDns: String = "172.28.254.73"
+    var remoteDns: String = "172.16.140.248"
 
     @DatabaseField
     var proxyApps: Boolean = true
