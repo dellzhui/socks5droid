@@ -274,20 +274,15 @@ class VpnService : BaseVpnService(), LocalDnsService.Interface {
                 "--loglevel", "3")
 
         cmd += "--socks-server-addr"
-        when (profile.method) {
-            "disable_ip_relay" -> {
-                cmd += "${profile.host}:${profile.remotePort}"
-                when (profile.route) {
-                    Acl.ALL, Acl.BYPASS_CHN, Acl.CUSTOM_RULES -> {
-                        cmd += "--protect_sock_path"
-                        cmd += app.deviceContext.filesDir.path + "/protect_path"
-                    }
-                    else -> {
-                        Log.e(tag, "no need set protect_path")
-                    }
-                }
+        cmd += "${profile.host}:${profile.remotePort}"
+        when (profile.route) {
+            Acl.ALL, Acl.BYPASS_CHN, Acl.CUSTOM_RULES -> {
+                cmd += "--protect_sock_path"
+                cmd += app.deviceContext.filesDir.path + "/protect_path"
             }
-            else -> cmd += "127.0.0.1:${DataStore.portProxy}"
+            else -> {
+                Log.e(tag, "no need set protect_path")
+            }
         }
 
         if (profile.ipv6) {
