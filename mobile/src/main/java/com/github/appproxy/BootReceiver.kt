@@ -98,7 +98,7 @@ class BootReceiver : BroadcastReceiver() {
     }
 
     private fun monitor_task_loop() {
-        Thread.sleep(1000 * 5)
+        Thread.sleep(1000 * 10)
         Log.e(TAG, "monitor task started")
         while(true) {
             Log.e(TAG, "monitor check")
@@ -135,8 +135,15 @@ class BootReceiver : BroadcastReceiver() {
                 Log.e(TAG, "we will update profile")
                 val file_new = File(filePath)
                 file_new.writeText(json_new)
-                Log.e(TAG, "we will reload service")
-                app.reloadService()
+                Log.e(TAG, "we will restart service")
+                try {
+                    app.stopService()
+                    Thread.sleep(1000 * 5)
+                } catch (ex: Exception) {
+                    Log.e(TAG, "stopService failed")
+                    ex.printStackTrace()
+                }
+                    app.startService()
             } else {
                 Log.e(TAG, "no need to update profile")
             }
@@ -203,14 +210,33 @@ class BootReceiver : BroadcastReceiver() {
         }
     }
 
+    private fun check_env(context : Context) : Boolean{
+        val local_reflect = LocalReflect()
+        val file = File(app.deviceContext.filesDir.path + "/proxy.json")
+        if(file.exists()) {
+            val info = local_reflect.GetProxyProfileInfoFromJson(file.readText())
+            if(info != null) {
+                if(!LocalReflect.isHostNameAvailable(info.serverAddr)) return false
+                return true
+            }
+        }
+
+        Log.e(TAG, "check from proxy.json failed")
+
+        val info =local_reflect.GetProxyProfileInfoFromDatabase(context.getDatabasePath("profile.db").path)
+        if(info == null) return false
+        if(!LocalReflect.isHostNameAvailable(info.serverAddr)) return false
+        return true
+    }
+
     private fun handle_intent(context: Context, intent: Intent) {
         val action = intent.action
 
         if(action == Intent.ACTION_BOOT_COMPLETED) {
-            init_database(context)
-            app.startService()
-            System.setProperty("proxy.monitor.boot", "received")
-            start_client_task()
+            //init_database(context)
+            //app.startService()
+            //System.setProperty("proxy.monitor.boot", "received")
+            //start_client_task()
             return
         }
 
@@ -219,8 +245,8 @@ class BootReceiver : BroadcastReceiver() {
             val netType = intent.getIntExtra(ConnectivityManager.EXTRA_NETWORK_TYPE, 9)
             Log.d(TAG, "netType_str is $netType")
 
-            if(netType == ConnectivityManager.TYPE_VPN) {
-                Log.e(TAG, "ignore TYPE_VPN")
+            if(netType != ConnectivityManager.TYPE_ETHERNET) {
+                Log.e(TAG, "not Ethernet")
                 return
             }
 
@@ -233,8 +259,13 @@ class BootReceiver : BroadcastReceiver() {
                 val state = mInfo.getDetailedState()
                 Log.d(TAG, "state is $state")
                 if(state == NetworkInfo.DetailedState.CONNECTED) {
+                    init_database(context)
                     System.setProperty("proxy.monitor.net_connect", "received")
+                    System.setProperty("proxy.monitor.boot", "received")
                     start_client_task()
+                    if(check_env(context)) {
+                        app.startService()
+                    }
                 }
             } else {
                 Log.d(TAG, "no avaliable network")

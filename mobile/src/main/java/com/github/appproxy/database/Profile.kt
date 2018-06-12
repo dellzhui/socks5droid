@@ -100,7 +100,7 @@ class Profile : Serializable {
     var name: String? = ""
 
     @DatabaseField
-    var host: String = "172.16.174.7"
+    var host: String = "apkproxy.gehua.net.cn"
 
     @DatabaseField
     var remotePort: Int = 9000

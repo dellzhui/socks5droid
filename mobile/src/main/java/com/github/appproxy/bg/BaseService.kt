@@ -463,7 +463,7 @@ object BaseService {
                     killProcesses()
 
                     if (!profile.host.isNumericAddress())
-                        profile.host = Dns.resolve(profile.host, true) ?: throw UnknownHostException()
+                        profile.host = Dns.resolve(profile.host, false) ?: throw UnknownHostException()
 
                     startNativeProcesses()
 
