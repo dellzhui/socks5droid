@@ -224,58 +224,22 @@ class MainActivity : AppCompatActivity(), ShadowsocksConnection.Interface, Drawe
 		return a.prepareAndAuthorize_reflect(this)
 	}
 
-    /*private inner class MonitorTaskClass : AsyncTask<String, Void, String>() {
-        override fun doInBackground(vararg params: String): String {
-            perform_monitor_task()
-            return "Executed"
-        }
-        override fun onPreExecute() {}
-        override fun onProgressUpdate(vararg values: Void) {}
-    }
-
-    private fun perform_monitor_task() {
-        Log.e(TAG, "monitor task started")
-        val filePath = app.deviceContext.filesDir.getPath() + "/proxy.json"
+    /*private fun test_aaa() {
+        val json_str = "{\n" +
+                "            \"terminalProxy\": {\n" +
+                "                \"aServerAddr\": \"192.168.52.201\",\n" +
+                "                \"iPort\": 9000,\n" +
+                "                \"aDnsAddr\": \"192.168.229.2,192.168.229.3\",\n" +
+                "                \"aAppList\": \"com.android.chrome;com.android.chrome\"\n" +
+                "            }\n" +
+                "        }"
         val local_reflect = LocalReflect()
-        var info_old: ProxyProfileInfo = ProxyProfileInfo()
-        val info_new: ProxyProfileInfo
-
-
-        try {
-            Log.e(TAG, "input filePath is $filePath")
-            val file_old = File(filePath)
-            val json_old = file_old.readText()
-            info_old = local_reflect.GetProxyProfileInfoFromJson(json_old)
-        } catch (ex: Exception) {
-            Log.e(TAG, "getProxyProfileInfoFromFile failed")
-            ex.printStackTrace()
+        val info = local_reflect.GetProxyProfileInfoFromJson(json_str)
+        if(info != null) {
+            Log.e(TAG, "get info is " + info)
+        } else {
+            Log.e(TAG, "ger failed")
         }
-
-        try {
-            val json_new = get("http://192.168.52.201:9002/proxy.json").text
-            Log.e(TAG, "get json_new is [$json_new]")
-            info_new = local_reflect.GetProxyProfileInfoFromJson(json_new)
-
-            if(local_reflect.isNewProxyProfileInfoAccept(info_old, info_new)) {
-                Log.e(TAG, "we will update profile")
-                val file_new = File(filePath)
-                file_new.writeText(json_new)
-            } else {
-                Log.e(TAG, "no need to update profile")
-            }
-        } catch (ex: Exception) {
-            Log.e(TAG, "perform_monitor_task failed")
-            ex.printStackTrace()
-        }
-    }
-
-    private fun start_client_task() {
-        MonitorTaskClass().execute("")
-    }
-
-    private fun test_aaa() {
-        start_client_task()
-        Thread.sleep(1000 * 2)
     }*/
 
     override fun onCreate(savedInstanceState: Bundle?) {

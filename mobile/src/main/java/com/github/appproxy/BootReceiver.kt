@@ -45,6 +45,14 @@ import khttp.get
 class BootReceiver : BroadcastReceiver() {
     companion object {
 		private const val TAG = "AppProxyBootReceiver"
+        private const val MONITOR_TIMEOUT_MS : Long = (1000 * 2 * 60 * 60)
+        // local test
+        private const val MONITOR_RQUEST_URL = "http://192.168.52.201:9002/proxy1.json"
+        // test
+        //private const val MONITOR_RQUEST_URL = "http://172.16.189.85:8080/msis/getDynamicConfig?type=terminalProxy&authKey=d34173bf2fe34f0249247be0676e9b6d"
+        // offical
+        //private const val MONITOR_RQUEST_URL = "http://api.ott.yun.gehua.net.cn:8080/msis/getDynamicConfig?type=terminalProxy&authKey=9e073be81d80e01953878b74327a2d02"
+
         private val componentName by lazy { ComponentName(app, BootReceiver::class.java) }
         fun enabled_local_set(value: Boolean) {
             Log.e(TAG, "local_set value to " + value)
@@ -103,7 +111,7 @@ class BootReceiver : BroadcastReceiver() {
         while(true) {
             Log.e(TAG, "monitor check")
             perform_monitor_task()
-            Thread.sleep(1000 * 2 * 60 * 60)
+            Thread.sleep(MONITOR_TIMEOUT_MS)
         }
     }
 
@@ -127,7 +135,7 @@ class BootReceiver : BroadcastReceiver() {
         }
 
         try {
-            val json_new = get("http://192.168.52.201:9002/proxy.json").text
+            val json_new = get(MONITOR_RQUEST_URL).text
             Log.i(TAG, "get json_new is [$json_new]")
             info_new = local_reflect.GetProxyProfileInfoFromJson(json_new)
 
@@ -153,18 +161,19 @@ class BootReceiver : BroadcastReceiver() {
         }
     }
 
-    private fun start_client_task() {
-        val proxy_monitor_status = System.getProperty("proxy.monitor.status")
-        Log.e(TAG, "proxy_monitor_status is " + proxy_monitor_status)
-
-        if(proxy_monitor_status == "running") {
-            Log.e(TAG, "already started")
-            return
-        }
-
+    private fun start_client_task(context : Context) {
         if(System.getProperty("proxy.monitor.boot") == "received" && System.getProperty("proxy.monitor.net_connect") == "received") {
-            Log.e(TAG, "we will start monitor task")
+            if(check_env(context)) {
+                app.startService()
+            }
+            val proxy_monitor_status = System.getProperty("proxy.monitor.status")
+            Log.e(TAG, "proxy_monitor_status is " + proxy_monitor_status)
+            if(proxy_monitor_status == "running") {
+                Log.e(TAG, "already started")
+                return
+            }
             System.setProperty("proxy.monitor.status", "running")
+            Log.e(TAG, "we will start monitor task")
             MonitorTaskClass().execute("")
             return
         }
@@ -233,10 +242,10 @@ class BootReceiver : BroadcastReceiver() {
         val action = intent.action
 
         if(action == Intent.ACTION_BOOT_COMPLETED) {
-            //init_database(context)
+            init_database(context)
             //app.startService()
-            //System.setProperty("proxy.monitor.boot", "received")
-            //start_client_task()
+            System.setProperty("proxy.monitor.boot", "received")
+            start_client_task(context)
             return
         }
 
@@ -259,13 +268,8 @@ class BootReceiver : BroadcastReceiver() {
                 val state = mInfo.getDetailedState()
                 Log.d(TAG, "state is $state")
                 if(state == NetworkInfo.DetailedState.CONNECTED) {
-                    init_database(context)
                     System.setProperty("proxy.monitor.net_connect", "received")
-                    System.setProperty("proxy.monitor.boot", "received")
-                    start_client_task()
-                    if(check_env(context)) {
-                        app.startService()
-                    }
+                    start_client_task(context)
                 }
             } else {
                 Log.d(TAG, "no avaliable network")
