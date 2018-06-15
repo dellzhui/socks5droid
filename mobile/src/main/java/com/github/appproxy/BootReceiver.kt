@@ -47,11 +47,11 @@ class BootReceiver : BroadcastReceiver() {
 		private const val TAG = "AppProxyBootReceiver"
         private const val MONITOR_TIMEOUT_MS : Long = (1000 * 2 * 60 * 60)
         // local test
-        private const val MONITOR_RQUEST_URL = "http://192.168.52.201:9002/proxy1.json"
+        //private const val MONITOR_RQUEST_URL = "http://192.168.52.201:9002/proxy1.json"
         // test
-        //private const val MONITOR_RQUEST_URL = "http://172.16.189.85:8080/msis/getDynamicConfig?type=terminalProxy&authKey=d34173bf2fe34f0249247be0676e9b6d"
+        private const val MONITOR_RQUEST_URL = "http://172.16.189.85:8080/msis/getDynamicConfig?type=terminalProxy&authKey=d34173bf2fe34f0249247be0676e9b6d"
         // offical
-        //private const val MONITOR_RQUEST_URL = "http://api.ott.yun.gehua.net.cn:8080/msis/getDynamicConfig?type=terminalProxy&authKey=9e073be81d80e01953878b74327a2d02"
+        //private const val MONITOR_RQUEST_URL = "http://api.ott.yun.gehua.net.cn:8080/msis/getDynamicConfig?type=terminalProxy&authKey=ca477cc0234d0d8c11b80a7af8b4f804"
 
         private val componentName by lazy { ComponentName(app, BootReceiver::class.java) }
         fun enabled_local_set(value: Boolean) {
