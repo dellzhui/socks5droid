@@ -73,11 +73,11 @@ dependencies {
     implementation 'net.glxn.qrgen:android:2.0'
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlinVersion"
     implementation 'xyz.belvi.mobilevision:barcodescanner:2.0.3'
+    implementation 'com.google.code.gson:gson:2.8.5'
     testImplementation "junit:junit:$junitVersion"
     androidTestImplementation "com.android.support.test:runner:$androidTestVersion"
     androidTestImplementation "com.android.support.test.espresso:espresso-core:$androidEspressoVersion"
     implementation files('libs/local_reflect.jar')
-    implementation files('libs/gson-2.8.2.jar')
     implementation files('libs/khttp-0.1.0.jar')
 }
 repositories {
