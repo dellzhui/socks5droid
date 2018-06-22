@@ -262,10 +262,10 @@ class BootReceiver : BroadcastReceiver() {
             val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
             Log.d(TAG, "mConnectivityManager is $connectivityManager")
 
-            val mInfo = connectivityManager.getNetworkInfo(netType)
-            Log.d(TAG, "mInfo is " + mInfo)
-            if (mInfo.isAvailable()) {
-                val state = mInfo.getDetailedState()
+            val mInfo = connectivityManager.activeNetworkInfo
+            Log.d(TAG, "mInfo is $mInfo")
+            if (mInfo != null && mInfo.isAvailable && mInfo.type == netType) {
+                val state = mInfo.detailedState
                 Log.d(TAG, "state is $state")
                 if(state == NetworkInfo.DetailedState.CONNECTED) {
                     System.setProperty("proxy.monitor.net_connect", "received")
