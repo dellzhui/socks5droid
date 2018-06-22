@@ -225,20 +225,16 @@ class MainActivity : AppCompatActivity(), ShadowsocksConnection.Interface, Drawe
 	}
 
     /*private fun test_aaa() {
-        val json_str = "{\n" +
-                "            \"terminalProxy\": {\n" +
-                "                \"aServerAddr\": \"192.168.52.201\",\n" +
-                "                \"iPort\": 9000,\n" +
-                "                \"aDnsAddr\": \"192.168.229.2,192.168.229.3\",\n" +
-                "                \"aAppList\": \"com.android.chrome;com.android.chrome\"\n" +
-                "            }\n" +
-                "        }"
-        val local_reflect = LocalReflect()
-        val info = local_reflect.GetProxyProfileInfoFromJson(json_str)
-        if(info != null) {
-            Log.e(TAG, "get info is " + info)
-        } else {
-            Log.e(TAG, "ger failed")
+        try {
+            Shell.run("su", arrayOf(
+                    "if ip rule add from all uidrange 0-0 lookup tun0 pref 12000; then",
+                    "  echo Success.",
+                    "else",
+                    "  echo Failed.",
+                    "fi"), null, true)?.joinToString("\n")
+        } catch (ex: Exception) {
+            Log.e(TAG, "test_aaa failed")
+            ex.printStackTrace()
         }
     }*/
 

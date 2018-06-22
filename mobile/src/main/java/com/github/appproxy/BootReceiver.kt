@@ -47,7 +47,7 @@ class BootReceiver : BroadcastReceiver() {
 		private const val TAG = "AppProxyBootReceiver"
         private const val MONITOR_TIMEOUT_MS : Long = (1000 * 2 * 60 * 60)
         // local test
-        //private const val MONITOR_RQUEST_URL = "http://192.168.52.201:9002/proxy1.json"
+        //private const val MONITOR_RQUEST_URL = "http://192.168.52.201:9002/proxy.json"
         // test
         private const val MONITOR_RQUEST_URL = "http://172.16.189.85:8080/msis/getDynamicConfig?type=terminalProxy&authKey=d34173bf2fe34f0249247be0676e9b6d"
         // offical
