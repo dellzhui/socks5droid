@@ -199,7 +199,8 @@ class VpnService : BaseVpnService(), LocalDnsService.Interface {
                 .setMtu(VPN_MTU)
                 .addAddress(PRIVATE_VLAN.format(Locale.ENGLISH, "1"), 24)
 		
-		if(profile.method != "bypass_dns") {
+		if(profile.method != "bypass_dns" && profile.remoteDns != "0.0.0.0") {
+            Log.e(tag, "we will enable dns remote proxy")
 			profile.remoteDns.split(",").forEach {
                 try {
                     builder.addDnsServer(it.trim())
@@ -237,7 +238,7 @@ class VpnService : BaseVpnService(), LocalDnsService.Interface {
                     val subnet = Subnet.fromString(it)!!
                     builder.addRoute(subnet.address.hostAddress, subnet.prefixSize)
                 }
-				if(profile.method != "bypass_dns") {
+				if(profile.method != "bypass_dns" && profile.remoteDns != "0.0.0.0") {
 					profile.remoteDns.split(",").mapNotNull { it.trim().parseNumericAddress() }
 						.forEach { builder.addRoute(it, it.address.size shl 3) }
 				}
