@@ -260,8 +260,8 @@ object BaseService {
         fun buildAdditionalArguments(cmd: ArrayList<String>): ArrayList<String> = cmd
 
         fun startNativeProcesses() {
-            val data = data
-            val profile = data.profile!!
+//            val data = data
+//            val profile = data.profile!!
 
             /*val cmd = buildAdditionalArguments(arrayListOf(
                     File((this as Context).applicationInfo.nativeLibraryDir, Executable.SS_LOCAL).absolutePath,
@@ -281,23 +281,23 @@ object BaseService {
 
             if (TcpFastOpen.sendEnabled) cmd += "--fast-open"*/
 
-            val ss_local_file = File((this as Context).applicationInfo.nativeLibraryDir, Executable.SS_LOCAL)
-            var ss_local_file_path = ss_local_file.absolutePath
-            if(!ss_local_file.exists() || !ss_local_file.canExecute()) {
-                val system_bin_ss_local_file_path = "/system/bin/" + Executable.SS_LOCAL
-                val system_bin_ss_local_file = File(system_bin_ss_local_file_path)
-                if(system_bin_ss_local_file.exists() && system_bin_ss_local_file.canExecute()) {
-                    ss_local_file_path = system_bin_ss_local_file.absolutePath
-                }
-            }
-            Log.e(tag, "ss_local_file_path is " + ss_local_file_path)
-
-            val cmd = arrayListOf(ss_local_file_path,
-                    DataStore.portProxy.toString(),
-                    profile.host,
-                    profile.remotePort.toString(),
-                    app.deviceContext.filesDir.path)
-            data.processes.start(cmd)
+//            val ss_local_file = File((this as Context).applicationInfo.nativeLibraryDir, Executable.SS_LOCAL)
+//            var ss_local_file_path = ss_local_file.absolutePath
+//            if(!ss_local_file.exists() || !ss_local_file.canExecute()) {
+//                val system_bin_ss_local_file_path = "/system/bin/" + Executable.SS_LOCAL
+//                val system_bin_ss_local_file = File(system_bin_ss_local_file_path)
+//                if(system_bin_ss_local_file.exists() && system_bin_ss_local_file.canExecute()) {
+//                    ss_local_file_path = system_bin_ss_local_file.absolutePath
+//                }
+//            }
+//            Log.e(tag, "ss_local_file_path is " + ss_local_file_path)
+//
+//            val cmd = arrayListOf(ss_local_file_path,
+//                    DataStore.portProxy.toString(),
+//                    profile.host,
+//                    profile.remotePort.toString(),
+//                    app.deviceContext.filesDir.path)
+//            data.processes.start(cmd)
         }
 
         fun createNotification(profileName: String): ServiceNotification
