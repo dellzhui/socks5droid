@@ -1,4 +1,4 @@
-java -jar key/signapk.jar key/platform.x509.pem key/platform.pk8 mobile/build/outputs/apk/debug/mobile-armeabi-v7a-debug.apk appproxy.apk
+java -jar key/signapk.jar key/platform.x509.pem key/platform.pk8 mobile/build/outputs/apk/release/mobile-armeabi-v7a-release-unsigned.apk appproxy.apk
 
 ::adb shell pm uninstall com.github.appproxy
 
