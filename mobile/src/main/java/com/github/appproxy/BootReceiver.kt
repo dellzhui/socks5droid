@@ -76,15 +76,20 @@ class BootReceiver : BroadcastReceiver() {
             while(index++ < timeout) {
                 val config_db_file = context.getDatabasePath("config.db")
                 if (config_db_file.exists()) {
+                    val local_reflect = LocalReflect()
                     Log.e(TAG, "database dir is ready")
                     if (context.getDatabasePath("profile.db").exists()) {
-                        Log.e(TAG, "profile.db is already created")
-                        break
+                        Log.e(TAG, "database is already created")
+                        val info = local_reflect.GetProxyProfileInfoFromDatabase(context.getDatabasePath("profile.db").path)
+                        if(info != null) {
+                            Log.d(TAG, "check database succeed")
+                            break
+                        }
+                        Log.e(TAG, "check database failed")
                     }
                     Log.e(TAG, "we will copy progile.db from other")
-                    val a: LocalReflect = LocalReflect()
-                    a.fileCopy(context.applicationInfo.nativeLibraryDir + "/profile.so", config_db_file.getParent() + "/profile.db")
-                    a.fileCopy(context.applicationInfo.nativeLibraryDir + "/config.so", config_db_file.getParent() + "/config.db")
+                    local_reflect.fileCopy(context.applicationInfo.nativeLibraryDir + "/profile.so", config_db_file.getParent() + "/profile.db")
+                    local_reflect.fileCopy(context.applicationInfo.nativeLibraryDir + "/config.so", config_db_file.getParent() + "/config.db")
                     break
                 }
                 Log.e(TAG, "database dir is not ready")
@@ -151,7 +156,7 @@ class BootReceiver : BroadcastReceiver() {
                     Log.e(TAG, "stopService failed")
                     ex.printStackTrace()
                 }
-                    app.startService()
+                app.startService()
             } else {
                 Log.e(TAG, "no need to update profile")
             }
