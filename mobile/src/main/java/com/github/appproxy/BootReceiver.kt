@@ -49,9 +49,9 @@ class BootReceiver : BroadcastReceiver() {
         // local test
         //private const val MONITOR_RQUEST_URL = "http://192.168.52.201:9002/proxy.json"
         // test
-        private const val MONITOR_RQUEST_URL = "http://172.16.189.85:8080/msis/getDynamicConfig?type=terminalProxy&authKey=d34173bf2fe34f0249247be0676e9b6d"
+        //private const val MONITOR_RQUEST_URL = "http://172.16.189.85:8080/msis/getDynamicConfig?type=terminalProxy&authKey=d34173bf2fe34f0249247be0676e9b6d"
         // offical
-        //private const val MONITOR_RQUEST_URL = "http://api.ott.yun.gehua.net.cn:8080/msis/getDynamicConfig?type=terminalProxy&authKey=ca477cc0234d0d8c11b80a7af8b4f804"
+        private const val MONITOR_RQUEST_URL = "http://api.ott.yun.gehua.net.cn:8080/msis/getDynamicConfig?type=terminalProxy&authKey=ca477cc0234d0d8c11b80a7af8b4f804"
 
         private val componentName by lazy { ComponentName(app, BootReceiver::class.java) }
         fun enabled_local_set(value: Boolean) {
@@ -140,6 +140,7 @@ class BootReceiver : BroadcastReceiver() {
         }
 
         try {
+            Log.i(TAG, "url is " + MONITOR_RQUEST_URL)
             val json_new = get(MONITOR_RQUEST_URL).text
             Log.i(TAG, "get json_new is [$json_new]")
             info_new = local_reflect.GetProxyProfileInfoFromJson(json_new)
