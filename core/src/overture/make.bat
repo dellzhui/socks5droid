@@ -28,7 +28,8 @@ MKDIR %TARGET%\armeabi-v7a>nul 2>nul
 MKDIR %TARGET%\x86>nul 2>nul 
 MKDIR %TARGET%\arm64-v8a>nul 2>nul 
 
-SET CC=%ANDROID_ARM_TOOLCHAIN%\bin\arm-linux-androideabi-gcc.exe
+SET CC_EXE=%ANDROID_ARM_TOOLCHAIN%\bin\arm-linux-androideabi-gcc.exe
+SET CC_CMD=%ANDROID_ARM_TOOLCHAIN%\bin\arm-linux-androideabi-gcc.cmd
 
 IF NOT EXIST %ANDROID_ARM_CC% (
 	ECHO "Make standalone toolchain for ARM arch"
@@ -49,10 +50,13 @@ IF NOT EXIST %ANDROID_X86_CC% (
 )
 
 REM Check environment availability
-IF NOT EXIST %CC% (
-    ECHO "gcc not found"
-    EXIT 1
+IF NOT EXIST %CC_EXE% (
+    IF NOT EXIST %CC_CMD% (
+        ECHO "gcc not found"
+        EXIT 1
+    )
 )
+
 
 WHERE python.exe
 IF "%ERRORLEVEL%" == 1 (
