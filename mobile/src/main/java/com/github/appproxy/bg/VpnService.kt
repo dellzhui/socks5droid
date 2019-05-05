@@ -236,7 +236,12 @@ class VpnService : BaseVpnService(), LocalDnsService.Interface {
             else -> {
                 resources.getStringArray(R.array.bypass_private_route).forEach {
                     val subnet = Subnet.fromString(it)!!
-                    builder.addRoute(subnet.address.hostAddress, subnet.prefixSize)
+                    try {
+                        builder.addRoute(subnet.address.hostAddress, subnet.prefixSize)
+                    } catch (ex: Exception) {
+                        Log.e(tag, "failed to add route " + subnet)
+                        ex.printStackTrace()
+                    }
                 }
 				if(profile.method != "bypass_dns" && profile.remoteDns != "0.0.0.0") {
 					profile.remoteDns.split(",").mapNotNull { it.trim().parseNumericAddress() }
