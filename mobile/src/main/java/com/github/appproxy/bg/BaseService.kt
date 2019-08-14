@@ -371,7 +371,7 @@ object BaseService {
         fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
 			Log.e(tag, "BaseService onStartCommand")
             val data = data
-            if (data.state != STOPPED) return Service.START_NOT_STICKY
+            if (data.state != STOPPED) return Service.START_STICKY
             val profile = app.currentProfile
             this as Context
             if (profile == null) {
@@ -479,7 +479,7 @@ object BaseService {
                     app.track(exc)
                 }
             }
-            return Service.START_NOT_STICKY
+            return Service.START_STICKY
         }
     }
 

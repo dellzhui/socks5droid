@@ -172,7 +172,7 @@ class VpnService : BaseVpnService(), LocalDnsService.Interface {
                 return super<LocalDnsService.Interface>.onStartCommand(intent, flags, startId)
             }
         stopRunner(true)
-        return Service.START_NOT_STICKY
+        return Service.START_STICKY
     }
 
     override fun startNativeProcesses() {
