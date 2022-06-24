@@ -37,7 +37,8 @@ class TrafficMonitorThread : LocalSocketListener("TrafficMonitorThread") {
             if (socket.inputStream.read(buffer) != 16) throw IOException("Unexpected traffic stat length")
             val stat = ByteBuffer.wrap(buffer).order(ByteOrder.LITTLE_ENDIAN)
             TrafficMonitor.update(stat.getLong(0), stat.getLong(8))
-        } catch (e: IOException) {
+            socket.outputStream.write(0)
+        } catch (e: Exception) {
             Log.e(tag, "Error when recv traffic stat", e)
             app.track(e)
         }

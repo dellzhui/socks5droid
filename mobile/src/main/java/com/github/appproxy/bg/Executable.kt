@@ -25,7 +25,6 @@ import android.util.Log
 import com.github.appproxy.App.Companion.app
 import com.github.appproxy.JniHelper
 import java.io.File
-import java.io.FileNotFoundException
 
 object Executable {
     const val REDSOCKS = "libredsocks.so"
@@ -39,11 +38,7 @@ object Executable {
 
     fun killAll() {
         for (process in File("/proc").listFiles { _, name -> TextUtils.isDigitsOnly(name) }) {
-            val exe = File(try {
-                File(process, "cmdline").readText()
-            } catch (ignore: FileNotFoundException) {
-                continue
-            }.split(Character.MIN_VALUE, limit = 2).first())
+            val exe = File(File(process, "cmdline").readText().split(Character.MIN_VALUE, limit = 2).first())
             if (exe.parent == app.applicationInfo.nativeLibraryDir && EXECUTABLES.contains(exe.name)) {
                 val errno = JniHelper.sigkill(process.name.toInt())
                 if (errno != 0) Log.w("kill", "SIGKILL ${exe.absolutePath} (${process.name}) failed with $errno")

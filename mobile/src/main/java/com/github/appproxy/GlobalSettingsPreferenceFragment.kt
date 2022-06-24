@@ -20,6 +20,7 @@
 
 package com.github.appproxy
 
+import android.app.admin.DevicePolicyManager
 import android.os.Build
 import android.os.Bundle
 import android.support.design.widget.Snackbar
@@ -39,24 +40,27 @@ class GlobalSettingsPreferenceFragment : PreferenceFragmentCompatDividers() {
         DataStore.initGlobal()
         addPreferencesFromResource(R.xml.pref_global)
         val boot = findPreference(Key.isAutoConnect) as SwitchPreference
+        val directBootAwareListener = Preference.OnPreferenceChangeListener { _, newValue ->
+            if (newValue as Boolean) DirectBoot.update() else DirectBoot.clean()
+            true
+        }
         boot.setOnPreferenceChangeListener { _, value ->
             BootReceiver.enabled = value as Boolean
-            true
+            directBootAwareListener.onPreferenceChange(null, DataStore.directBootAware)
         }
         boot.isChecked = BootReceiver.enabled
 
-        val canToggleLocked = findPreference(Key.directBootAware)
-        if (Build.VERSION.SDK_INT >= 24) canToggleLocked.setOnPreferenceChangeListener { _, newValue ->
-            if (app.directBootSupported && newValue as Boolean) DirectBoot.update() else DirectBoot.clean()
-            true
-        } else canToggleLocked.parent!!.removePreference(canToggleLocked)
+        val dba = findPreference(Key.directBootAware)
+        if (Build.VERSION.SDK_INT >= 24 && context!!.getSystemService(DevicePolicyManager::class.java)
+                .storageEncryptionStatus == DevicePolicyManager.ENCRYPTION_STATUS_ACTIVE_PER_USER)
+            dba.onPreferenceChangeListener = directBootAwareListener else dba.parent!!.removePreference(dba)
 
         val tfo = findPreference(Key.tfo) as SwitchPreference
         tfo.isChecked = TcpFastOpen.sendEnabled
         tfo.setOnPreferenceChangeListener { _, value ->
             val result = TcpFastOpen.enabled(value as Boolean)
             if (result != null && result != "Success.")
-                Snackbar.make(requireActivity().findViewById(R.id.snackbar), result, Snackbar.LENGTH_LONG).show()
+                Snackbar.make(activity!!.findViewById(R.id.snackbar), result, Snackbar.LENGTH_LONG).show()
             value == TcpFastOpen.sendEnabled
         }
         if (!TcpFastOpen.supported) {

@@ -25,7 +25,7 @@ import android.os.Bundle
 
 class NativePlugin(resolveInfo: ResolveInfo) : ResolvedPlugin(resolveInfo) {
     init {
-        check(resolveInfo.providerInfo != null)
+        assert(resolveInfo.providerInfo != null)
     }
 
     override val metaData: Bundle get() = resolveInfo.providerInfo.metaData

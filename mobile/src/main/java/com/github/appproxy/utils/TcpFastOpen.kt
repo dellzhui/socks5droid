@@ -52,5 +52,4 @@ object TcpFastOpen {
             "else",
             "  echo Failed.",
             "fi"), null, true)?.joinToString("\n")
-    fun enabledAsync(value: Boolean) = thread("TcpFastOpen") { enabled(value) }.join(1000)
 }

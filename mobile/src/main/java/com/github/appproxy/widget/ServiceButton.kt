@@ -29,6 +29,7 @@ import android.support.graphics.drawable.AnimatedVectorDrawableCompat
 import android.support.v7.widget.TooltipCompat
 import android.util.AttributeSet
 import android.view.View
+import com.github.appproxy.App.Companion.app
 import com.github.appproxy.R
 import com.github.appproxy.bg.BaseService
 import java.util.*
@@ -83,7 +84,9 @@ class ServiceButton @JvmOverloads constructor(context: Context, attrs: Attribute
             TooltipCompat.setTooltipText(this, context.getString(R.string.connect))
         }
         refreshDrawableState()
-        isEnabled = state == BaseService.CONNECTED || state == BaseService.STOPPED
+        isEnabled = false
+        if (state == BaseService.CONNECTED || state == BaseService.STOPPED) app.handler.postDelayed(
+                { isEnabled = state == BaseService.CONNECTED || state == BaseService.STOPPED }, 1000)
     }
 
     private fun counters(a: AnimatedVectorDrawableCompat, b: AnimatedVectorDrawableCompat): Boolean =

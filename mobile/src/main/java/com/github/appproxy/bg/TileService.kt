@@ -30,12 +30,11 @@ import com.github.appproxy.R
 import com.github.appproxy.ShadowsocksConnection
 import com.github.appproxy.aidl.IShadowsocksService
 import com.github.appproxy.aidl.IShadowsocksServiceCallback
-import com.github.appproxy.preference.DataStore
 import android.service.quicksettings.TileService as BaseTileService
 
 @RequiresApi(24)
 class TileService : BaseTileService(), ShadowsocksConnection.Interface {
-    private val iconIdle by lazy { Icon.createWithResource(this, R.drawable.ic_service_idle) }
+    private val iconIdle by lazy { Icon.createWithResource(this, R.drawable.ic_service_idle).setTint(0x79ffffff) }
     private val iconBusy by lazy { Icon.createWithResource(this, R.drawable.ic_service_busy) }
     private val iconConnected by lazy { Icon.createWithResource(this, R.drawable.ic_service_active) }
     private val keyguard by lazy { getSystemService(Context.KEYGUARD_SERVICE) as KeyguardManager }
@@ -82,7 +81,7 @@ class TileService : BaseTileService(), ShadowsocksConnection.Interface {
     }
 
     override fun onClick() {
-        if (isLocked && !DataStore.canToggleLocked) unlockAndRun(this::toggle) else toggle()
+        if (isLocked) unlockAndRun(this::toggle) else toggle()
     }
 
     private fun toggle() {

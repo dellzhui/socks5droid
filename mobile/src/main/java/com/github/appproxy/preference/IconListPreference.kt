@@ -28,7 +28,11 @@ import android.util.AttributeSet
 class IconListPreference(context: Context, attrs: AttributeSet? = null) : ListPreference(context, attrs) {
     var entryIcons: Array<Drawable?>? = null
     val selectedEntry: Int get() = entryValues.indexOf(value)
-    val entryIcon: Drawable? get() = entryIcons?.getOrNull(selectedEntry)
+    val entryIcon: Drawable? get() = try {
+        entryIcons?.get(selectedEntry)
+    } catch (_: ArrayIndexOutOfBoundsException) {
+        null
+    }
 //    fun setEntryIcons(@ArrayRes entryIconsResId: Int) {
 //        val array = getContext().getResources().obtainTypedArray(entryIconsResId)
 //        entryIcons = Array(array.length(), { i -> array.getDrawable(i) })
@@ -45,7 +49,7 @@ class IconListPreference(context: Context, attrs: AttributeSet? = null) : ListPr
     }
 
     init {
-        super.setOnPreferenceChangeListener { preference, newValue ->
+        super.setOnPreferenceChangeListener({ preference, newValue ->
             val listener = listener
             if (listener == null || listener.onPreferenceChange(preference, newValue)) {
                 value = newValue.toString()
@@ -53,7 +57,7 @@ class IconListPreference(context: Context, attrs: AttributeSet? = null) : ListPr
                 if (entryIcons != null) icon = entryIcon
                 true
             } else false
-        }
+        })
 //        val a = context.obtainStyledAttributes(attrs, R.styleable.IconListPreference)
 //        val entryIconsResId: Int = a.getResourceId(R.styleable.IconListPreference_entryIcons, -1)
 //        if (entryIconsResId != -1) entryIcons = entryIconsResId

@@ -4,8 +4,7 @@
               android:layout_height="wrap_content"
               android:background="?android:attr/selectableItemBackground"
               android:paddingStart="12dp"
-              android:paddingEnd="12dp"
-              android:focusable="true">
+              android:paddingEnd="12dp">
     <ImageView android:id="@android:id/icon"
                android:layout_width="52dp"
                android:layout_height="52dp"/>

@@ -20,6 +20,10 @@
   <string name="traffic">%s↑\t%s↓</string>
   <string name="stat_summary">Sent: \t\t\t\t\t%3$s\t↑\t%1$s\nReceived: \t%4$s\t↓\t%2$s</string>
   <string name="speed">%s/s</string>
+  <plurals name="bytes">
+    <item quantity="one">Byte</item>
+    <item quantity="other">Bytes</item>
+  </plurals>
   <string name="connection_test_pending">Check Connectivity</string>
   <string name="connection_test_testing">Testing…</string>
   <string name="connection_test_available">Success: %dms latency</string>
@@ -53,8 +57,9 @@
   <string name="auto_connect_summary">Enable AppProxy on startup</string>
   <string name="auto_connect_summary_v24">Enable AppProxy on startup. Recommended to use always-on VPN
     instead</string>
-  <string name="direct_boot_aware">Allow Toggling in Lock Screen</string>
-  <string name="direct_boot_aware_summary">Your selected profile information will be less protected</string>
+  <string name="direct_boot_aware">Direct Boot Aware</string>
+  <string name="direct_boot_aware_summary">Allow Shadowsocks to start before your device is unlocked (your selected
+    profile information will be less protected)</string>
   <string name="tcp_fastopen_summary">Toggling requires ROOT permission</string>
   <string name="tcp_fastopen_summary_unsupported">Unsupported kernel version: %s &lt; 3.7.1</string>
   <string name="udp_dns">DNS Forwarding</string>
@@ -94,7 +99,6 @@
   <string name="action_apply_all">Apply Settings to All Profiles</string>
   <string name="action_export">Export to Clipboard</string>
   <string name="action_import">Import from Clipboard</string>
-  <string name="action_import_file">Import from file…</string>
   <string name="action_export_msg">Successfully export!</string>
   <string name="action_export_err">Failed to export.</string>
   <string name="action_import_msg">Successfully import!</string>

@@ -43,6 +43,8 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.system.ErrnoException;
 
+import java.net.InetAddress;
+
 public class JniHelper {
     static {
         System.loadLibrary("jni-helper");
@@ -52,7 +54,8 @@ public class JniHelper {
     public static void sigtermCompat(@NonNull Process process) throws Exception {
         if (Build.VERSION.SDK_INT >= 24) throw new UnsupportedOperationException("Never call this method in OpenJDK!");
         int errno = sigterm(process);
-        if (errno != 0) throw new ErrnoException("kill", errno);
+        if (errno != 0) throw Build.VERSION.SDK_INT >= 21
+                ? new ErrnoException("kill", errno) : new Exception("kill failed: " + errno);
     }
 
     @Deprecated // only implemented for before API 24

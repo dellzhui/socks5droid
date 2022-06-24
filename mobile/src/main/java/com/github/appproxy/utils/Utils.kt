@@ -28,8 +28,8 @@ fun String.parseNumericAddress(): InetAddress? {
 }
 
 fun parsePort(str: String?, default: Int, min: Int = 1025): Int {
-    val value = str?.toIntOrNull() ?: default
-    return if (value < min || value > 65535) default else value
+    val x = str?.toIntOrNull() ?: default
+    return if (x < min || x > 65535) default else x
 }
 
 fun broadcastReceiver(callback: (Context, Intent) -> Unit): BroadcastReceiver = object : BroadcastReceiver() {
@@ -39,8 +39,8 @@ fun broadcastReceiver(callback: (Context, Intent) -> Unit): BroadcastReceiver = 
 /**
  * Wrapper for kotlin.concurrent.thread that tracks uncaught exceptions.
  */
-fun thread(name: String? = null, start: Boolean = true, isDaemon: Boolean = false,
-           contextClassLoader: ClassLoader? = null, priority: Int = -1, block: () -> Unit): Thread {
+fun thread(start: Boolean = true, isDaemon: Boolean = false, contextClassLoader: ClassLoader? = null,
+           name: String? = null, priority: Int = -1, block: () -> Unit): Thread {
     val thread = kotlin.concurrent.thread(false, isDaemon, contextClassLoader, name, priority, block)
     thread.setUncaughtExceptionHandler(app::track)
     if (start) thread.start()
@@ -72,6 +72,6 @@ private class SortedListIterable<out T>(private val list: SortedList<T>) : Itera
 private class SortedListIterator<out T>(private val list: SortedList<T>) : Iterator<T> {
     private var count = 0
     override fun hasNext() = count < list.size()
-    override fun next(): T = if (hasNext()) list[count++] else throw NoSuchElementException()
+    override fun next(): T = list[count++]
 }
 fun <T> SortedList<T>.asIterable(): Iterable<T> = SortedListIterable(this)

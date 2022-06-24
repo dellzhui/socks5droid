@@ -23,6 +23,7 @@ package com.github.appproxy.bg
 import android.app.Service
 import android.content.Intent
 import android.os.IBinder
+import com.github.appproxy.database.Profile
 
 /**
  * Shadowsocks service at its minimum.
@@ -32,7 +33,7 @@ class ProxyService : Service(), BaseService.Interface {
         BaseService.register(this)
     }
 
-    override val tag: String get() = "AppProxyProxyService"
+    override val tag: String get() = "ShadowsocksProxyService"
     override fun createNotification(profileName: String): ServiceNotification =
             ServiceNotification(this, profileName, "service-proxy", true)
 

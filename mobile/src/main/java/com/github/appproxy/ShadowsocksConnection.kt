@@ -48,9 +48,7 @@ class ShadowsocksConnection(private val instance: Interface) : ServiceConnection
          * Different from Android framework, this method will be called even when you call `detachService`.
          */
         fun onServiceDisconnected() { }
-        override fun binderDied() {
-            connection.service = null
-        }
+        override fun binderDied() { }
     }
 
     private var connectionActive = false
@@ -111,8 +109,6 @@ class ShadowsocksConnection(private val instance: Interface) : ServiceConnection
         connectionActive = false
         if (instance.listenForDeath) binder?.unlinkToDeath(instance, 0)
         binder = null
-        if (instance.serviceCallback != null)
-            service?.stopListeningForBandwidth(instance.serviceCallback)
         service = null
     }
 }

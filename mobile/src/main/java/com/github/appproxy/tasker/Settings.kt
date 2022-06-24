@@ -29,8 +29,8 @@ import com.twofortyfouram.locale.api.Intent as ApiIntent
 
 class Settings(bundle: Bundle?) {
     companion object {
-        private const val KEY_SWITCH_ON = "switch_on"
-        private const val KEY_PROFILE_ID = "profile_id"
+        private val KEY_SWITCH_ON = "switch_on"
+        private val KEY_PROFILE_ID = "profile_id"
 
         fun fromIntent(intent: Intent) = Settings(intent.getBundleExtra(ApiIntent.EXTRA_BUNDLE))
     }
@@ -44,8 +44,8 @@ class Settings(bundle: Bundle?) {
         if (profileId >= 0) bundle.putInt(KEY_PROFILE_ID, profileId)
         val profile = ProfileManager.getProfile(profileId)
         return Intent().putExtra(ApiIntent.EXTRA_BUNDLE, bundle).putExtra(ApiIntent.EXTRA_STRING_BLURB,
-                if (profile != null) context.getString(if (switchOn) R.string.start_service else R.string.stop_service,
-                        profile.formattedName)
+                if (profile != null)
+                    context.getString(if (switchOn) R.string.start_service else R.string.stop_service, profile.formattedName)
                 else context.getString(if (switchOn) R.string.start_service_default else R.string.stop))
     }
 }

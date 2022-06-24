@@ -21,10 +21,8 @@
 package com.github.appproxy
 
 import android.app.Activity
-import android.app.PendingIntent
 import android.app.backup.BackupManager
 import android.content.ActivityNotFoundException
-import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.net.VpnService
@@ -40,7 +38,6 @@ import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.content.res.AppCompatResources
 import android.support.v7.preference.PreferenceDataStore
-import android.text.format.Formatter
 import android.util.Log
 import android.view.View
 import android.widget.TextView
@@ -51,6 +48,7 @@ import com.github.appproxy.aidl.IShadowsocksService
 import com.github.appproxy.aidl.IShadowsocksServiceCallback
 import com.github.appproxy.bg.BaseService
 import com.github.appproxy.bg.Executable
+import com.github.appproxy.bg.TrafficMonitor
 import com.github.appproxy.database.Profile
 import com.github.appproxy.database.ProfileManager
 import com.github.appproxy.preference.DataStore
@@ -59,11 +57,13 @@ import com.github.appproxy.utils.Key
 import com.github.appproxy.utils.responseLength
 import com.github.appproxy.utils.thread
 import com.github.appproxy.widget.ServiceButton
+import com.mikepenz.crossfader.Crossfader
+import com.mikepenz.crossfader.view.CrossFadeSlidingPaneLayout
 import com.mikepenz.materialdrawer.Drawer
 import com.mikepenz.materialdrawer.DrawerBuilder
+import com.mikepenz.materialdrawer.interfaces.ICrossfader
 import com.mikepenz.materialdrawer.model.PrimaryDrawerItem
 import com.mikepenz.materialdrawer.model.interfaces.IDrawerItem
-import java.io.IOException
 import java.net.HttpURLConnection
 import java.net.InetSocketAddress
 import java.net.Proxy
@@ -78,7 +78,7 @@ import com.inspur.reflect.LocalReflect
 class MainActivity : AppCompatActivity(), ShadowsocksConnection.Interface, Drawer.OnDrawerItemClickListener,
         OnPreferenceDataStoreChangeListener {
     companion object {
-        private const val TAG = "AppProxyMainActivity"
+        private const val TAG = "ShadowsocksMainActivity"
         private const val REQUEST_CONNECT = 1
 
         private const val DRAWER_PROFILES = 0L
@@ -87,14 +87,12 @@ class MainActivity : AppCompatActivity(), ShadowsocksConnection.Interface, Drawe
         private const val DRAWER_FAQ = 4L
         private const val DRAWER_CUSTOM_RULES = 5L
 
-        fun pendingIntent(context: Context) = PendingIntent.getActivity(context, 0,
-                Intent(context, MainActivity::class.java).setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT), 0)
-
         var stateListener: ((Int) -> Unit)? = null
     }
 
     // UI
     private lateinit var fab: ServiceButton
+    internal var crossfader: Crossfader<CrossFadeSlidingPaneLayout>? = null
     internal lateinit var drawer: Drawer
     private var previousSelectedDrawer: Long = 0    // it's actually lateinit
 
@@ -155,10 +153,10 @@ class MainActivity : AppCompatActivity(), ShadowsocksConnection.Interface, Drawe
         stateListener?.invoke(state)
     }
     fun updateTraffic(profileId: Int, txRate: Long, rxRate: Long, txTotal: Long, rxTotal: Long) {
-        txText.text = Formatter.formatFileSize(this, txTotal)
-        rxText.text = Formatter.formatFileSize(this, rxTotal)
-        txRateText.text = getString(R.string.speed, Formatter.formatFileSize(this, txRate))
-        rxRateText.text = getString(R.string.speed, Formatter.formatFileSize(this, rxRate))
+        txText.text = TrafficMonitor.formatTraffic(txTotal)
+        rxText.text = TrafficMonitor.formatTraffic(rxTotal)
+        txRateText.text = getString(R.string.speed, TrafficMonitor.formatTraffic(txRate))
+        rxRateText.text = getString(R.string.speed, TrafficMonitor.formatTraffic(rxRate))
         val child = supportFragmentManager.findFragmentById(R.id.fragment_holder) as ToolbarFragment?
         if (state != BaseService.STOPPING)
             child?.onTrafficUpdated(profileId, txRate, rxRate, txTotal, rxTotal)
@@ -176,8 +174,9 @@ class MainActivity : AppCompatActivity(), ShadowsocksConnection.Interface, Drawe
             url.openConnection(Proxy(Proxy.Type.SOCKS,
                     InetSocketAddress("127.0.0.1", DataStore.portProxy))))
                 as HttpURLConnection
-        conn.setRequestProperty("Connection", "close")
         conn.instanceFollowRedirects = false
+        conn.connectTimeout = 10000
+        conn.readTimeout = 10000
         conn.useCaches = false
         val (success, result) = try {
             val start = SystemClock.elapsedRealtime()
@@ -185,8 +184,8 @@ class MainActivity : AppCompatActivity(), ShadowsocksConnection.Interface, Drawe
             val elapsed = SystemClock.elapsedRealtime() - start
             if (code == 204 || code == 200 && conn.responseLength == 0L)
                 Pair(true, getString(R.string.connection_test_available, elapsed))
-            else throw IOException(getString(R.string.connection_test_error_status_code, code))
-        } catch (e: IOException) {
+            else throw Exception(getString(R.string.connection_test_error_status_code, code))
+        } catch (e: Exception) {
             Pair(false, getString(R.string.connection_test_error, e.message))
         } finally {
             conn.disconnect()
@@ -203,7 +202,6 @@ class MainActivity : AppCompatActivity(), ShadowsocksConnection.Interface, Drawe
     override fun onServiceConnected(service: IShadowsocksService) = changeState(service.state)
     override fun onServiceDisconnected() = changeState(BaseService.IDLE)
     override fun binderDied() {
-        super.binderDied()
         app.handler.post {
             connection.disconnect()
             Executable.killAll()
@@ -242,7 +240,7 @@ class MainActivity : AppCompatActivity(), ShadowsocksConnection.Interface, Drawe
         Log.e(TAG, "MainActivity onCreate start")
         super.onCreate(savedInstanceState)
         setContentView(R.layout.layout_main)
-        drawer = DrawerBuilder()
+        val drawerBuilder = DrawerBuilder()
                 .withActivity(this)
                 .withTranslucentStatusBar(true)
                 .withHeader(R.layout.layout_header)
@@ -279,7 +277,28 @@ class MainActivity : AppCompatActivity(), ShadowsocksConnection.Interface, Drawe
                 .withOnDrawerItemClickListener(this)
                 .withActionBarDrawerToggle(true)
                 .withSavedInstance(savedInstanceState)
-                .build()
+        val miniDrawerWidth = resources.getDimension(R.dimen.material_mini_drawer_item)
+        if (resources.displayMetrics.widthPixels >=
+                resources.getDimension(R.dimen.profile_item_max_width) + miniDrawerWidth) {
+            drawer = drawerBuilder.withGenerateMiniDrawer(true).buildView()
+            val crossfader = Crossfader<CrossFadeSlidingPaneLayout>()
+            this.crossfader = crossfader
+            crossfader
+                    .withContent(findViewById(android.R.id.content))
+                    .withFirst(drawer.slider, resources.getDimensionPixelSize(R.dimen.material_drawer_width))
+                    .withSecond(drawer.miniDrawer.build(this), miniDrawerWidth.toInt())
+                    .withSavedInstance(savedInstanceState)
+                    .build()
+            if (resources.configuration.layoutDirection == View.LAYOUT_DIRECTION_RTL)
+                crossfader.crossFadeSlidingPaneLayout.setShadowDrawableRight(
+                        AppCompatResources.getDrawable(this, R.drawable.material_drawer_shadow_right))
+            else crossfader.crossFadeSlidingPaneLayout.setShadowDrawableLeft(
+                    AppCompatResources.getDrawable(this, R.drawable.material_drawer_shadow_left))
+            drawer.miniDrawer.withCrossFader(object : ICrossfader { // a wrapper is needed
+                override fun isCrossfaded(): Boolean = crossfader.isCrossFaded
+                override fun crossfade() = crossfader.crossFade()
+            })
+        } else drawer = drawerBuilder.build()
 
         if (savedInstanceState == null) displayFragment(ProfilesFragment())
         previousSelectedDrawer = drawer.currentSelection
@@ -293,30 +312,26 @@ class MainActivity : AppCompatActivity(), ShadowsocksConnection.Interface, Drawe
                 ++testCount
                 statusText.setText(R.string.connection_test_testing)
                 val id = testCount  // it would change by other code
-                thread("ConnectionTest") { testConnection(id) }
+                thread { testConnection(id) }
             }
         }
 
         fab = findViewById(R.id.fab)
         fab.setOnClickListener {
             Log.e(TAG, "state is " + state + ", CONNECTED is " + BaseService.CONNECTED)
-            when {
-                state == BaseService.CONNECTED -> {
-                    Log.e(TAG, "we will stop vpn service")
-                    app.stopService()
-                }
-                BaseService.usingVpnMode -> {
-                    //test_aaa()
+            if (state == BaseService.CONNECTED) {
+                Log.e(TAG, "we will stop vpn service")
+                app.stopService()
+            } else thread {
+                if (BaseService.usingVpnMode) {
                     Log.e(TAG, "BaseService.usingVpnMode is true")
                     /*val intent = VpnService.prepare(this)
-					Log.e(TAG, "intent is " + intent)
                     if (intent != null) startActivityForResult(intent, REQUEST_CONNECT)
-                    else onActivityResult(REQUEST_CONNECT, Activity.RESULT_OK, null)*/
+                    else app.handler.post { onActivityResult(REQUEST_CONNECT, Activity.RESULT_OK, null) }*/
                     if (local_prepareAndAuthorize()) {
                         onActivityResult(REQUEST_CONNECT, Activity.RESULT_OK, null)
                     }
-                }
-                else -> {
+                } else {
                     Log.e(TAG, "we will start vpn service")
                     app.startService()
                 }
@@ -428,6 +443,7 @@ class MainActivity : AppCompatActivity(), ShadowsocksConnection.Interface, Drawe
     override fun onSaveInstanceState(outState: Bundle?) {
         super.onSaveInstanceState(outState)
         drawer.saveInstanceState(outState)
+        crossfader?.saveInstanceState(outState)
     }
 
     override fun onDestroy() {

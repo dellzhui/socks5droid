@@ -21,7 +21,6 @@
 package com.github.appproxy.plugin
 
 import android.annotation.SuppressLint
-import android.content.BroadcastReceiver
 import android.content.ContentResolver
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -85,21 +84,18 @@ object PluginManager {
                   """, Base64.DEFAULT))
     }
 
-    private var receiver: BroadcastReceiver? = null
+    private val receiver by lazy { app.listenForPackageChanges { synchronized(this) { cachedPlugins = null } } }
     private var cachedPlugins: Map<String, Plugin>? = null
-    fun fetchPlugins(): Map<String, Plugin> = synchronized(this) {
-        if (receiver == null) receiver = app.listenForPackageChanges {
-            synchronized(this) {
-                receiver = null
-                cachedPlugins = null
+    fun fetchPlugins(): Map<String, Plugin> {
+        receiver
+        return synchronized(this) {
+            if (cachedPlugins == null) {
+                val pm = app.packageManager
+                cachedPlugins = (pm.queryIntentContentProviders(Intent(PluginContract.ACTION_NATIVE_PLUGIN),
+                        PackageManager.GET_META_DATA).map { NativePlugin(it) } + NoPlugin).associate { it.id to it }
             }
+            cachedPlugins!!
         }
-        if (cachedPlugins == null) {
-            val pm = app.packageManager
-            cachedPlugins = (pm.queryIntentContentProviders(Intent(PluginContract.ACTION_NATIVE_PLUGIN),
-                    PackageManager.GET_META_DATA).map { NativePlugin(it) } + NoPlugin).associate { it.id to it }
-        }
-        cachedPlugins!!
     }
 
     private fun buildUri(id: String) = Uri.Builder()
@@ -132,10 +128,10 @@ object PluginManager {
     private fun initNative(options: PluginOptions): String? {
         val providers = app.packageManager.queryIntentContentProviders(
                 Intent(PluginContract.ACTION_NATIVE_PLUGIN, buildUri(options.id)), 0)
-        if (providers.isEmpty()) return null
+        assert(providers.size == 1)
         val uri = Uri.Builder()
                 .scheme(ContentResolver.SCHEME_CONTENT)
-                .authority(providers.single().providerInfo.authority)
+                .authority(providers[0].providerInfo.authority)
                 .build()
         val cr = app.contentResolver
         return try {
@@ -152,7 +148,7 @@ object PluginManager {
         out.putString(PluginContract.EXTRA_OPTIONS, options.id)
         val result = cr.call(uri, PluginContract.METHOD_GET_EXECUTABLE, null, out)
                 .getString(PluginContract.EXTRA_ENTRY)
-        check(File(result).canExecute())
+        assert(File(result).canExecute())
         return result
     }
 
@@ -171,7 +167,7 @@ object PluginManager {
             do {
                 val path = cursor.getString(0)
                 val file = File(pluginDir, path)
-                check(file.absolutePath.startsWith(pluginDirPath))
+                assert(file.absolutePath.startsWith(pluginDirPath))
                 cr.openInputStream(uri.buildUpon().path(path).build()).use { inStream ->
                     file.outputStream().use { outStream -> inStream.copyTo(outStream) }
                 }

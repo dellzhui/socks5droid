@@ -21,7 +21,7 @@
 package com.github.appproxy.preference
 
 import android.os.Binder
-import com.github.appproxy.App.Companion.app
+import com.github.appproxy.BootReceiver
 import com.github.appproxy.database.PrivateDatabase
 import com.github.appproxy.database.PublicDatabase
 import com.github.appproxy.utils.DirectBoot
@@ -49,8 +49,10 @@ object DataStore {
             publicStore.putInt(Key.id, value)
             if (DataStore.directBootAware) DirectBoot.update()
         }
-    val canToggleLocked: Boolean get() = publicStore.getBoolean(Key.directBootAware) == true
-    val directBootAware: Boolean get() = app.directBootSupported && canToggleLocked
+    /**
+     * Setter is defined in MainActivity.onPreferenceDataStoreChanged.
+     */
+    val directBootAware: Boolean get() = BootReceiver.enabled && (publicStore.getBoolean(Key.directBootAware) ?: false)
     var serviceMode: String
         get() = publicStore.getString(Key.serviceMode) ?: Key.modeVpn
         set(value) = publicStore.putString(Key.serviceMode, value)

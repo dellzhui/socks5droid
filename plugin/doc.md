@@ -153,8 +153,7 @@ This corresponds to `com.github.appproxy.plugin.NativePluginProvider` in the plu
         ...
         <provider android:name=".BinaryProvider"
                   android:exported="true"
-                  android:authorities="$FULLY_QUALIFIED_NAME_OF_YOUR_CONTENTPROVIDER"
-                  tools:ignore="ExportedContentProvider">
+                  android:authorities="$FULLY_QUALIFIED_NAME_OF_YOUR_CONTENTPROVIDER">
             <intent-filter>
                 <action android:name="com.github.appproxy.plugin.ACTION_NATIVE_PLUGIN"/>
             </intent-filter>

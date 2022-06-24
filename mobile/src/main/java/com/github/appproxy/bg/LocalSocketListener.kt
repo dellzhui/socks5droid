@@ -28,7 +28,7 @@ import com.github.appproxy.App.Companion.app
 import java.io.File
 import java.io.IOException
 
-abstract class LocalSocketListener(protected val tag: String) : Thread(tag) {
+abstract class LocalSocketListener(protected val tag: String) : Thread() {
     init {
         setUncaughtExceptionHandler(app::track)
     }
@@ -41,7 +41,7 @@ abstract class LocalSocketListener(protected val tag: String) : Thread(tag) {
      * Inherited class do not need to close input/output streams as they will be closed automatically.
      */
     protected abstract fun accept(socket: LocalSocket)
-    final override fun run() {
+    override final fun run() {
         socketFile.delete() // It's a must-have to close and reuse previous local socket.
         LocalSocket().use { localSocket ->
             val serverSocket = try {

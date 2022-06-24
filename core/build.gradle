@@ -16,7 +16,7 @@ android {
 
         externalNativeBuild {
             ndkBuild {
-                abiFilters 'armeabi-v7a', 'arm64-v8a', 'x86'
+                abiFilters 'armeabi-v7a'
                 arguments "-j${Runtime.runtime.availableProcessors()}"
             }
         }
@@ -56,9 +56,9 @@ task goClean(type: Exec) {
 }
 
 tasks.whenTaskAdded { task ->
-  if ((task.name == 'generateJsonModelDebug' ||
-          task.name == 'generateJsonModelRelease')) {
-      task.dependsOn(goBuild)
+    if ((task.name == 'generateJsonModelDebug' ||
+            task.name == 'generateJsonModelRelease')) {
+        task.dependsOn(goBuild)
     }
 }
 

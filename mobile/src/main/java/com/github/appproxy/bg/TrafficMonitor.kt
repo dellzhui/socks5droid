@@ -21,6 +21,9 @@
 package com.github.appproxy.bg
 
 import android.os.SystemClock
+import com.github.appproxy.App.Companion.app
+import com.github.appproxy.R
+import java.text.DecimalFormat
 
 object TrafficMonitor {
     // Bytes per second
@@ -37,6 +40,19 @@ object TrafficMonitor {
     private var timestampLast = 0L
     @Volatile
     private var dirty = true
+
+    private val units = arrayOf("KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB", "BB", "NB", "DB", "CB")
+    private val numberFormat = DecimalFormat("@@@")
+    fun formatTraffic(size: Long): String {
+        var n: Double = size.toDouble()
+        var i = -1
+        while (n >= 999.5) {
+            n /= 1024
+            ++i
+        }
+        return if (i < 0) "$size ${app.resources.getQuantityString(R.plurals.bytes, size.toInt())}"
+        else "${numberFormat.format(n)} ${units[i]}"
+    }
 
     fun updateRate(): Boolean {
         val now = SystemClock.elapsedRealtime()

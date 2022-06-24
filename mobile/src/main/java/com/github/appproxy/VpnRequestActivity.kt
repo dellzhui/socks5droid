@@ -20,6 +20,7 @@
 
 package com.github.appproxy
 
+import android.app.Activity
 import android.app.KeyguardManager
 import android.content.BroadcastReceiver
 import android.content.Context
@@ -27,7 +28,6 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.net.VpnService
 import android.os.Bundle
-import android.support.v7.app.AppCompatActivity
 import android.util.Log
 import com.github.appproxy.App.Companion.app
 import com.github.appproxy.aidl.IShadowsocksService
@@ -35,9 +35,9 @@ import com.github.appproxy.bg.BaseService
 import com.github.appproxy.utils.broadcastReceiver
 import com.inspur.reflect.LocalReflect
 
-class VpnRequestActivity : AppCompatActivity(), ShadowsocksConnection.Interface {
+class VpnRequestActivity : Activity(), ShadowsocksConnection.Interface {
     companion object {
-        private const val TAG = "AppProxyVRActivity"
+        private const val TAG = "ShadowsocksVRActivity"
         private const val REQUEST_CONNECT = 1
     }
 
@@ -63,13 +63,15 @@ class VpnRequestActivity : AppCompatActivity(), ShadowsocksConnection.Interface 
 	}
 	
     override fun onServiceConnected(service: IShadowsocksService) {
-        /*val intent = VpnService.prepare(this)
-        if (intent == null) onActivityResult(REQUEST_CONNECT, RESULT_OK, null)
-        else startActivityForResult(intent, REQUEST_CONNECT)*/
-		Log.e(TAG, "onServiceConnected, prepareAndAuthorize")
-		if(local_prepareAndAuthorize()) {
-            onActivityResult(REQUEST_CONNECT, RESULT_OK, null)
-        }
+        app.handler.postDelayed({
+            /*val intent = VpnService.prepare(this)
+            if (intent == null) onActivityResult(REQUEST_CONNECT, RESULT_OK, null)
+            else startActivityForResult(intent, REQUEST_CONNECT)*/
+		     Log.e(TAG, "onServiceConnected, prepareAndAuthorize")
+		     if(local_prepareAndAuthorize()) {
+                onActivityResult(REQUEST_CONNECT, RESULT_OK, null)
+            }
+        }, 1000)
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {

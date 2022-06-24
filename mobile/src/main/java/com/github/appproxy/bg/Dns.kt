@@ -20,23 +20,56 @@
 
 package com.github.appproxy.bg
 
+import android.content.Context
+import android.net.ConnectivityManager
+import android.net.LinkProperties
+import android.os.Build
 import android.util.Log
 import com.github.appproxy.App.Companion.app
 import com.github.appproxy.BuildConfig
+import okhttp3.Dns as Okdns
 import org.xbill.DNS.*
-import java.io.IOException
-import java.net.*
+import java.net.Inet6Address
+import java.net.InetAddress
+import java.net.NetworkInterface
+import java.net.UnknownHostException
+import java.util.*
 
 object Dns {
     private const val TAG = "Dns"
 
+    @Throws(Exception::class)
+    fun getDnsResolver(context: Context): String {
+        val dnsResolvers = getDnsResolvers(context)
+        if (dnsResolvers.isEmpty()) throw Exception("Couldn't find an active DNS resolver")
+        val dnsResolver = dnsResolvers.iterator().next().toString()
+        if (dnsResolver.startsWith("/")) return dnsResolver.substring(1)
+        return dnsResolver
+    }
+
+    @Throws(Exception::class)
+    private fun getDnsResolvers(context: Context): Collection<InetAddress> {
+        val addresses = ArrayList<InetAddress>()
+        val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val classLinkProperties = Class.forName("android.net.LinkProperties")
+        val getActiveLinkPropertiesMethod = ConnectivityManager::class.java.getMethod("getActiveLinkProperties")
+        val linkProperties = getActiveLinkPropertiesMethod.invoke(connectivityManager)
+        if (linkProperties != null) {
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
+                val dnses = classLinkProperties.getMethod("getDnses").invoke(linkProperties) as Collection<*>
+                dnses.mapTo(addresses) { it as InetAddress }
+            } else addresses.addAll((linkProperties as LinkProperties).dnsServers)
+        }
+        return addresses
+    }
+
     private val hasIPv6Support get() = try {
         val result = NetworkInterface.getNetworkInterfaces().asSequence().flatMap { it.inetAddresses.asSequence() }
-                .any { it is Inet6Address && !it.isLoopbackAddress && !it.isLinkLocalAddress }
+                .count { it is Inet6Address && !it.isLoopbackAddress && !it.isLinkLocalAddress } > 0
         if (result && BuildConfig.DEBUG) Log.d(TAG, "IPv6 address detected")
         result
-    } catch (ex: SocketException) {
-        Log.e(TAG, "Failed to get interfaces' addresses.", ex)
+    } catch (ex: Exception) {
+        Log.e(TAG, "Failed to get interfaces' addresses.")
         app.track(ex)
         false
     }
@@ -57,7 +90,7 @@ object Dns {
                     Type.AAAA -> return (r as AAAARecord).address.hostAddress
                 }
             }
-        } catch (_: IOException) { }
+        } catch (_: Exception) { }
         return null
     }
     private fun resolve(host: String): String? = try {
