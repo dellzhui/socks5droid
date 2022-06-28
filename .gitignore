@@ -27,3 +27,4 @@ things/
 
 # release apks
 *.apk
+core/src/overture/bin
