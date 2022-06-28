@@ -20,8 +20,8 @@ android {
         applicationId "com.github.appproxy"
         minSdkVersion rootProject.minSdkVersion
         targetSdkVersion rootProject.sdkVersion
-        versionCode 4060100
-        versionName "4.6.1"
+        versionCode 4060300
+        versionName "4.6.3"
         testApplicationId "com.github.appproxy.test"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary true

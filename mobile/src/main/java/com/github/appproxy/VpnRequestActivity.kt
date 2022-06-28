@@ -37,7 +37,7 @@ import com.inspur.reflect.LocalReflect
 
 class VpnRequestActivity : Activity(), ShadowsocksConnection.Interface {
     companion object {
-        private const val TAG = "ShadowsocksVRActivity"
+        private const val TAG = "AppProxyVRActivity"
         private const val REQUEST_CONNECT = 1
     }
 

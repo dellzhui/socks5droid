@@ -32,7 +32,7 @@ class TransproxyService : Service(), LocalDnsService.Interface {
         BaseService.register(this)
     }
 
-    override val tag: String get() = "ShadowsocksTransproxyService"
+    override val tag: String get() = "AppProxyTransproxyService"
     override fun createNotification(profileName: String): ServiceNotification =
             ServiceNotification(this, profileName, "service-transproxy", true)
 

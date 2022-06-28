@@ -33,7 +33,7 @@ class ProxyService : Service(), BaseService.Interface {
         BaseService.register(this)
     }
 
-    override val tag: String get() = "ShadowsocksProxyService"
+    override val tag: String get() = "AppProxyProxyService"
     override fun createNotification(profileName: String): ServiceNotification =
             ServiceNotification(this, profileName, "service-proxy", true)
 

@@ -44,7 +44,7 @@ import khttp.get
 
 class BootReceiver : BroadcastReceiver() {
     companion object {
-		private const val TAG = "ShadowsocksBootReceiver"
+		private const val TAG = "AppProxyBootReceiver"
         private const val MONITOR_TIMEOUT_MS : Long = (1000 * 2 * 60 * 60)
         // local test
         //private const val MONITOR_RQUEST_URL = "http://192.168.52.201:9002/proxy.json"

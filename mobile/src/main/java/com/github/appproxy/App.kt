@@ -62,7 +62,7 @@ import java.io.IOException
 class App : Application() {
     companion object {
         lateinit var app: App
-        private const val TAG = "ShadowsocksApplication"
+        private const val TAG = "AppProxyApplication"
     }
 
     val handler by lazy { Handler(Looper.getMainLooper()) }

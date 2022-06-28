@@ -75,7 +75,7 @@ class VpnService : BaseVpnService(), LocalDnsService.Interface {
         BaseService.register(this)
     }
 
-    override val tag: String get() = "ShadowsocksVpnService"
+    override val tag: String get() = "AppProxyVpnService"
     override fun createNotification(profileName: String): ServiceNotification =
             ServiceNotification(this, profileName, "service-vpn")
 

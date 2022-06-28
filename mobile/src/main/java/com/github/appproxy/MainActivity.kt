@@ -78,7 +78,7 @@ import com.inspur.reflect.LocalReflect
 class MainActivity : AppCompatActivity(), ShadowsocksConnection.Interface, Drawer.OnDrawerItemClickListener,
         OnPreferenceDataStoreChangeListener {
     companion object {
-        private const val TAG = "ShadowsocksMainActivity"
+        private const val TAG = "AppProxyMainActivity"
         private const val REQUEST_CONNECT = 1
 
         private const val DRAWER_PROFILES = 0L
