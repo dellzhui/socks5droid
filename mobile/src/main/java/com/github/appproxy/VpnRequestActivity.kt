@@ -32,8 +32,8 @@ import android.util.Log
 import com.github.appproxy.App.Companion.app
 import com.github.appproxy.aidl.IShadowsocksService
 import com.github.appproxy.bg.BaseService
+import com.github.appproxy.bg.VpnService.Companion.prepareAndAuthorize
 import com.github.appproxy.utils.broadcastReceiver
-import com.inspur.reflect.LocalReflect
 
 class VpnRequestActivity : Activity(), ShadowsocksConnection.Interface {
     companion object {
@@ -58,8 +58,9 @@ class VpnRequestActivity : Activity(), ShadowsocksConnection.Interface {
 	
 	private fun local_prepareAndAuthorize(): Boolean {
 		Log.e(TAG, "get local_prepareAndAuthorize api by reflection")
-		val a: LocalReflect = LocalReflect()
-		return a.prepareAndAuthorize_reflect(this)
+//		val a: LocalReflect = LocalReflect()
+//		return a.prepareAndAuthorize_reflect(this)
+        return prepareAndAuthorize(this)
 	}
 	
     override fun onServiceConnected(service: IShadowsocksService) {

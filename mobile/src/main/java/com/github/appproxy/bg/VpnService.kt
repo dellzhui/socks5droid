@@ -20,7 +20,9 @@
 
 package com.github.appproxy.bg
 
+import android.annotation.SuppressLint
 import android.app.Service
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.LocalSocket
@@ -49,6 +51,13 @@ class VpnService : BaseVpnService(), LocalDnsService.Interface {
         private const val PRIVATE_VLAN6 = "fdfe:dcba:9876::%s"
 
         private val getInt: Method = FileDescriptor::class.java.getDeclaredMethod("getInt$")
+
+        @JvmStatic
+        @SuppressLint("ServiceCast")
+        fun prepareAndAuthorize(context: Context): Boolean{
+            val cm = GetIConnectivityManager()
+            return cm.openVPNAuth(context.getApplicationContext().getPackageName())
+        }
     }
 
     private inner class ProtectWorker : LocalSocketListener("ShadowsocksVpnThread") {

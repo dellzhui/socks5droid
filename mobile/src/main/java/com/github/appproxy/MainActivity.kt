@@ -25,10 +25,8 @@ import android.app.backup.BackupManager
 import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.net.Uri
-import android.net.VpnService
 import android.nfc.NdefMessage
 import android.nfc.NfcAdapter
-import android.os.AsyncTask
 import android.os.Bundle
 import android.os.SystemClock
 import android.support.customtabs.CustomTabsIntent
@@ -49,6 +47,7 @@ import com.github.appproxy.aidl.IShadowsocksServiceCallback
 import com.github.appproxy.bg.BaseService
 import com.github.appproxy.bg.Executable
 import com.github.appproxy.bg.TrafficMonitor
+import com.github.appproxy.bg.VpnService.Companion.prepareAndAuthorize
 import com.github.appproxy.database.Profile
 import com.github.appproxy.database.ProfileManager
 import com.github.appproxy.preference.DataStore
@@ -69,7 +68,6 @@ import java.net.InetSocketAddress
 import java.net.Proxy
 import java.net.URL
 import java.util.*
-import com.inspur.reflect.LocalReflect
 
 //import com.inspur.reflect.ProxyProfileInfo
 //import java.io.File
@@ -218,8 +216,9 @@ class MainActivity : AppCompatActivity(), ShadowsocksConnection.Interface, Drawe
 	
 	private fun local_prepareAndAuthorize(): Boolean {
 		Log.e(TAG, "get local_prepareAndAuthorize api by reflection")
-		val a: LocalReflect = LocalReflect()
-		return a.prepareAndAuthorize_reflect(this)
+//		val a: LocalReflect = LocalReflect()
+//		return a.prepareAndAuthorize_reflect(this)
+        return prepareAndAuthorize(this)
 	}
 
     /*private fun test_aaa() {
