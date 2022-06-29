@@ -59,8 +59,15 @@ import com.inspur.reflect.LocalReflect
 import com.inspur.reflect.ProxyProfileInfo
 import com.j256.ormlite.logger.LocalLog
 import com.takisoft.fix.support.v7.preference.PreferenceFragmentCompat
+import java.io.BufferedReader
 import java.io.File
 import java.io.IOException
+import java.io.InputStreamReader
+import java.net.Inet6Address
+import java.net.InetAddress
+import java.net.NetworkInterface
+import java.net.SocketException
+import java.util.*
 
 class App : Application() {
     companion object {
@@ -108,6 +115,37 @@ class App : Application() {
             ex.printStackTrace()
         }
         return null
+    }
+
+    fun isServiceConnected(): Boolean {
+        var hostIp: String? = null
+        try {
+            val nis: Enumeration<NetworkInterface> = NetworkInterface.getNetworkInterfaces()
+            var ia: InetAddress? = null
+            while (nis.hasMoreElements()) {
+                val ni: NetworkInterface = nis.nextElement() as NetworkInterface
+                Log.d(TAG,"getIpAddress,interface:"+ni.getName());
+                if (ni.getName().equals("tun0")) {
+                    val ias: Enumeration<InetAddress> = ni.getInetAddresses()
+                    while (ias.hasMoreElements()) {
+                        ia = ias.nextElement()
+                        if (ia is Inet6Address) {
+                            continue  // skip ipv6
+                        }
+                        val ip: String = ia.getHostAddress()
+                        // 过滤掉127段的ip地址
+                        if ("127.0.0.1" != ip) {
+                            hostIp = ia.getHostAddress()
+                            break
+                        }
+                    }
+                }
+            }
+        } catch (e: SocketException) {
+            e.printStackTrace()
+        }
+        Log.d(TAG, "getIpAddress,interface:tun0" + ",ip:" + hostIp)
+        return hostIp != null && !"".equals(hostIp)
     }
 
     fun b_need_start_service(): Boolean {

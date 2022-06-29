@@ -176,13 +176,13 @@ class BootReceiver : BroadcastReceiver() {
                     if(top_package_name.trim().equals(item.trim())) {
                         Log.e(TAG, "WARNING:top package name " + top_package_name + " is in white app list")
                         mTopNotInWhiteCount = 0
-                        if(BaseService.IDLE != BaseService.CONNECTED) {
+                        if(!app.isServiceConnected()) {
                             Log.e(TAG, "WARNING:service not connected, we will start it")
                             app.startService()
                             Thread.sleep(1000 * 5)
                             var index = 0
-                            while(index < 5) {
-                                if(BaseService.IDLE == BaseService.CONNECTED) {
+                            while(index < 30) {
+                                if(app.isServiceConnected()) {
                                     Log.d(TAG, "start service succeed")
                                     return
                                 }
@@ -200,7 +200,7 @@ class BootReceiver : BroadcastReceiver() {
                 mTopNotInWhiteCount++
                 if(mTopNotInWhiteCount >= 5) {
                     mTopNotInWhiteCount = 0
-                    if(BaseService.IDLE == BaseService.CONNECTED) {
+                    if(app.isServiceConnected()) {
                         Log.e(TAG, "top not in white for 5 times, we will stop service")
                         try {
                             app.stopService()
@@ -211,8 +211,8 @@ class BootReceiver : BroadcastReceiver() {
                             return
                         }
                         var index = 0
-                        while(index < 5) {
-                            if(BaseService.IDLE != BaseService.CONNECTED) {
+                        while(index < 10) {
+                            if(!app.isServiceConnected()) {
                                 Log.d(TAG, "stop service succeed")
                                 return
                             }

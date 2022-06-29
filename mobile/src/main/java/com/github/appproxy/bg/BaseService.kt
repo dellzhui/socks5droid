@@ -359,13 +359,14 @@ object BaseService {
 			Log.e(tag, "BaseService onStartCommand")
             val data = data
             if (data.state != STOPPED) return Service.START_STICKY
-            val profile = app.currentProfile
+            var profile = app.currentProfile
             this as Context
             if (profile == null) {
                 Log.e(tag, "profile is null")
-                data.notification = createNotification("")  // gracefully shutdown: https://stackoverflow.com/questions/47337857/context-startforegroundservice-did-not-then-call-service-startforeground-eve
-                stopRunner(true, getString(R.string.profile_empty))
-                return Service.START_NOT_STICKY
+                profile = Profile()
+//                data.notification = createNotification("")  // gracefully shutdown: https://stackoverflow.com/questions/47337857/context-startforegroundservice-did-not-then-call-service-startforeground-eve
+//                stopRunner(true, getString(R.string.profile_empty))
+//                return Service.START_NOT_STICKY
             }
             data.profile = profile
 
@@ -391,38 +392,38 @@ object BaseService {
 
             thread {
                 try {
-                    if (profile.host == "198.199.101.152") {
-                        val client = OkHttpClient.Builder()
-                                .dns {
-                                    listOf((Dns.resolve(it, false) ?: throw UnknownHostException())
-                                            .parseNumericAddress())
-                                }
-                                .connectTimeout(10, TimeUnit.SECONDS)
-                                .writeTimeout(10, TimeUnit.SECONDS)
-                                .readTimeout(30, TimeUnit.SECONDS)
-                                .build()
-                        val mdg = MessageDigest.getInstance("SHA-1")
-                        mdg.update(app.info.signatures[0].toByteArray())
-                        val requestBody = FormBody.Builder()
-                                .add("sig", String(Base64.encode(mdg.digest(), 0)))
-                                .build()
-                        val request = Request.Builder()
-                                .url(app.remoteConfig.getString("proxy_url"))
-                                .post(requestBody)
-                                .build()
+//                    if (profile.host == "198.199.101.152") {
+//                        val client = OkHttpClient.Builder()
+//                                .dns {
+//                                    listOf((Dns.resolve(it, false) ?: throw UnknownHostException())
+//                                            .parseNumericAddress())
+//                                }
+//                                .connectTimeout(10, TimeUnit.SECONDS)
+//                                .writeTimeout(10, TimeUnit.SECONDS)
+//                                .readTimeout(30, TimeUnit.SECONDS)
+//                                .build()
+//                        val mdg = MessageDigest.getInstance("SHA-1")
+//                        mdg.update(app.info.signatures[0].toByteArray())
+//                        val requestBody = FormBody.Builder()
+//                                .add("sig", String(Base64.encode(mdg.digest(), 0)))
+//                                .build()
+//                        val request = Request.Builder()
+//                                .url(app.remoteConfig.getString("proxy_url"))
+//                                .post(requestBody)
+//                                .build()
+//
+//                        val proxies = client.newCall(request).execute()
+//                                .body()!!.string().split('|').toMutableList()
+//                        proxies.shuffle()
+//                        val proxy = proxies.first().split(':')
+//                        profile.host = proxy[0].trim()
+//                        profile.remotePort = proxy[1].trim().toInt()
+//                        profile.password = proxy[2].trim()
+//                        profile.method = proxy[3].trim()
+//                    }
 
-                        val proxies = client.newCall(request).execute()
-                                .body()!!.string().split('|').toMutableList()
-                        proxies.shuffle()
-                        val proxy = proxies.first().split(':')
-                        profile.host = proxy[0].trim()
-                        profile.remotePort = proxy[1].trim().toInt()
-                        profile.password = proxy[2].trim()
-                        profile.method = proxy[3].trim()
-                    }
-
-                    if (profile.route == Acl.CUSTOM_RULES)
-                        Acl.save(Acl.CUSTOM_RULES, Acl.customRules.flatten(10))
+//                    if (profile.route == Acl.CUSTOM_RULES)
+//                        Acl.save(Acl.CUSTOM_RULES, Acl.customRules.flatten(10))
 
                     data.plugin = PluginConfiguration(profile.plugin ?: "").selectedOptions
                     data.pluginPath = PluginManager.init(data.plugin)
