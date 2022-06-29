@@ -99,14 +99,16 @@ class App : Application() {
         return ProxyProfileInfo()
     }
 
-    fun getForegroundActivity(): String? {
+    fun getForegroundActivity(debug: Boolean): String? {
         try {
             val am = app.applicationContext.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
             val lr = am.runningAppProcesses ?: return null
 
             for (ra in lr) {
                 if (ra.importance === ActivityManager.RunningAppProcessInfo.IMPORTANCE_VISIBLE || ra.importance === ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND) {
-//                    Log.d(TAG, "top package name " + ra.processName)
+                    if(debug) {
+                        Log.d(TAG, "top package name " + ra.processName)
+                    }
                     return ra.processName
                 }
             }
@@ -117,14 +119,16 @@ class App : Application() {
         return null
     }
 
-    fun isServiceConnected(): Boolean {
+    fun isServiceConnected(debug: Boolean): Boolean {
         var hostIp: String? = null
         try {
             val nis: Enumeration<NetworkInterface> = NetworkInterface.getNetworkInterfaces()
             var ia: InetAddress? = null
             while (nis.hasMoreElements()) {
                 val ni: NetworkInterface = nis.nextElement() as NetworkInterface
-//                Log.d(TAG,"getIpAddress,interface:"+ni.getName());
+                if(debug) {
+                    Log.d(TAG,"getIpAddress,interface:"+ni.getName());
+                }
                 if (ni.getName().equals("tun0")) {
                     val ias: Enumeration<InetAddress> = ni.getInetAddresses()
                     while (ias.hasMoreElements()) {
@@ -144,26 +148,28 @@ class App : Application() {
         } catch (e: SocketException) {
             e.printStackTrace()
         }
-//        Log.d(TAG, "getIpAddress,interface:tun0" + ",ip:" + hostIp)
+        if(debug) {
+            Log.d(TAG, "getIpAddress,interface:tun0" + ",ip:" + hostIp)
+        }
         return hostIp != null && !"".equals(hostIp)
     }
 
-    fun b_need_start_service(): Boolean {
+    private fun b_need_start_service(): Boolean {
         try {
             val proxy_info = app.get_proxy_info_from_file()
             if(proxy_info.checkAvailable()) {
-                val top_package_name = getForegroundActivity()
+                val top_package_name = getForegroundActivity(true)
                 if(top_package_name != null && !"".equals(top_package_name)) {
                     for (item in proxy_info.appList.split(";")) {
                         if ("" == item.trim { it <= ' ' }) {
                             continue
                         }
                         if(top_package_name.trim().equals(item.trim())) {
-//                            Log.e(TAG, "WARNING:top package name " + top_package_name + " is in white app list")
+                            Log.e(TAG, "WARNING:top package name " + top_package_name + " is in white app list")
                             return true
                         }
                     }
-//                    Log.e(TAG, "top package name " + top_package_name + " is not in white app list")
+                    Log.e(TAG, "top package name " + top_package_name + " is not in white app list")
                     return false
                 }
             }

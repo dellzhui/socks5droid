@@ -161,46 +161,54 @@ class BootReceiver : BroadcastReceiver() {
         }
     }
 
-    private fun perform_app_monitor_task() {
+    private fun perform_app_monitor_task(debug: Boolean) {
         if(!mProxyProfileInfo.checkAvailable()) {
             mProxyProfileInfo = app.get_proxy_info_from_file()
         }
 
         if(mProxyProfileInfo.checkAvailable()) {
-            val top_package_name = app.getForegroundActivity()
+            val top_package_name = app.getForegroundActivity(debug)
             if(top_package_name != null && !"".equals(top_package_name)) {
                 for (item in mProxyProfileInfo.appList.split(";")) {
                     if ("" == item.trim { it <= ' ' }) {
                         continue
                     }
                     if(top_package_name.trim().equals(item.trim())) {
-//                        Log.e(TAG, "WARNING:top package name " + top_package_name + " is in white app list")
+                        if(debug) {
+                            Log.e(TAG, "WARNING:top package name " + top_package_name + " is in white app list")
+                        }
                         mTopNotInWhiteCount = 0
-                        if(!app.isServiceConnected()) {
+                        if(!app.isServiceConnected(debug)) {
                             Log.e(TAG, "WARNING:service not connected, we will start it")
                             app.startService()
                             Thread.sleep(1000 * 5)
                             var index = 0
                             while(index < 30) {
-                                if(app.isServiceConnected()) {
+                                if(app.isServiceConnected(debug)) {
                                     Log.d(TAG, "start service succeed")
                                     return
                                 }
                                 Thread.sleep(1000 * 1)
                                 index++
                             }
-                            Log.e(TAG, "WARNING:start service failed")
+                            if(debug) {
+                                Log.e(TAG, "WARNING:start service failed")
+                            }
                         } else {
-                            Log.d(TAG, "service already connected")
+                            if(debug) {
+                                Log.d(TAG, "service already connected")
+                            }
                         }
                         return
                     }
                 }
-//                Log.e(TAG, "top package name " + top_package_name + " is not in white app list")
+                if(debug) {
+                    Log.e(TAG, "top package name " + top_package_name + " is not in white app list")
+                }
                 mTopNotInWhiteCount++
                 if(mTopNotInWhiteCount >= 5) {
                     mTopNotInWhiteCount = 0
-                    if(app.isServiceConnected()) {
+                    if(app.isServiceConnected(debug)) {
                         Log.e(TAG, "top not in white for 5 times, we will stop service")
                         try {
                             app.stopService()
@@ -212,7 +220,7 @@ class BootReceiver : BroadcastReceiver() {
                         }
                         var index = 0
                         while(index < 10) {
-                            if(!app.isServiceConnected()) {
+                            if(!app.isServiceConnected(debug)) {
                                 Log.d(TAG, "stop service succeed")
                                 return
                             }
@@ -230,14 +238,18 @@ class BootReceiver : BroadcastReceiver() {
     private fun perform_monitor_task() {
         var index = 0
         perform_proxy_file_monitor_task()
-        perform_app_monitor_task()
+        perform_app_monitor_task(true)
 
         while(true) {
             Thread.sleep(APP_MONITOR_TIMEOUT_MS)
-//            Log.e(TAG, "monitor check")
-            perform_app_monitor_task()
+            val debug: Boolean = (index % 30 == 0)
+            if(debug) {
+                Log.e(TAG, "monitor check")
+            }
+            perform_app_monitor_task(debug)
             index++
             if(APP_MONITOR_TIMEOUT_MS*index>=PROXY_FILE_MONITOR_TIMEOUT_MS) {
+                index = 0
                 perform_proxy_file_monitor_task()
             }
         }
