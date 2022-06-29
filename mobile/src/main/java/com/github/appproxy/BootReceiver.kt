@@ -34,7 +34,9 @@ import com.inspur.reflect.LocalReflect
 import android.net.NetworkInfo
 import android.net.ConnectivityManager
 import android.R.attr.action
+import android.app.ActivityManager
 import android.os.AsyncTask
+import com.github.appproxy.bg.HandlerAppPackage
 import com.inspur.reflect.ProxyProfileInfo
 import java.io.File
 import khttp.get
@@ -43,9 +45,12 @@ import khttp.get
 
 
 class BootReceiver : BroadcastReceiver() {
+    private val hashMap = HashMap<String,ProxyProfileInfo>()
+    private var is2Hour: Boolean = false
     companion object {
 		private const val TAG = "AppProxyBootReceiver"
         private const val MONITOR_TIMEOUT_MS : Long = (1000 * 2 * 60 * 60)
+        private const val MONITOR_TASK_MS : Long = (1000 * 1)
         // local test
         //private const val MONITOR_RQUEST_URL = "http://192.168.52.201:9002/proxy.json"
         // test
@@ -122,23 +127,68 @@ class BootReceiver : BroadcastReceiver() {
         override fun onPreExecute() {}
         override fun onProgressUpdate(vararg values: Void) {}
     }
+    private inner class MonitorForegroundTask : AsyncTask<String,Void,String>(){
+        override fun doInBackground(vararg params: String?): String {
+            monitor_foreground_task()
+            return "Executed"
+        }
+    }
 
     private fun monitor_task_loop() {
         Thread.sleep(1000 * 10)
         Log.e(TAG, "monitor task started")
         while(true) {
             Log.e(TAG, "monitor check")
+            is2Hour = true
             perform_monitor_task()
             Thread.sleep(MONITOR_TIMEOUT_MS)
         }
+    }
+    private fun monitor_foreground_task() {
+        Log.e(TAG, "monitor task started")
+        while(true) {
+            Log.e(TAG, "monitor check")
+            perform_monitor_task()
+            Thread.sleep(MONITOR_TASK_MS)
+        }
+    }
+    private fun getForegroundPackageName(): String? {
+        val activityManager  = app.applicationContext.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+        val am = activityManager.runningAppProcesses
+        if (am != null && am.size > 0){
+            am.forEach {
+                if (it.importance == ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND
+                        || it.importance == ActivityManager.RunningAppProcessInfo.IMPORTANCE_VISIBLE){
+                    return it.processName
+                }
+            }
+        }
+        return null
     }
 
     private fun perform_monitor_task() {
         val filePath = app.deviceContext.filesDir.path + "/proxy.json"
         val local_reflect = LocalReflect()
         var info_old: ProxyProfileInfo = ProxyProfileInfo()
-        val info_new: ProxyProfileInfo
-
+        var info_new: ProxyProfileInfo? = null
+        if (hashMap.get("key") != null && !is2Hour){
+            val handlerAppPackage = HandlerAppPackage(info_new)
+            val  nameApp = getForegroundPackageName()
+            handlerAppPackage.appList.forEach {
+                if (nameApp.equals(it)){
+                    try {
+                        app.stopService()
+                        Thread.sleep(1000 * 5)
+                    } catch (ex: Exception) {
+                        Log.e(TAG, "stopService failed")
+                        ex.printStackTrace()
+                    }
+                    app.startService()
+                }
+            }
+            return
+        }
+        is2Hour = false
         try {
             Log.i(TAG, "input filePath is $filePath")
             val file_old = File(filePath)
@@ -157,9 +207,10 @@ class BootReceiver : BroadcastReceiver() {
             val json_new = get(MONITOR_RQUEST_URL).text
             Log.i(TAG, "get json_new is [$json_new]")
             info_new = local_reflect.GetProxyProfileInfoFromJson(json_new)
-
+            hashMap.put("key",info_new)
             if(local_reflect.isNewProxyProfileInfoAccept(info_old, info_new)) {
                 Log.e(TAG, "we will update profile")
+                hashMap.put("key", ProxyProfileInfo())
                 val file_new = File(filePath)
                 file_new.writeText(json_new)
                 Log.e(TAG, "we will restart service")
