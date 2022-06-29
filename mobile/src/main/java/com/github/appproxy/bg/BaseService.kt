@@ -244,6 +244,7 @@ object BaseService {
         fun buildAdditionalArguments(cmd: ArrayList<String>): ArrayList<String> = cmd
 
         fun startNativeProcesses() {
+            Log.d(tag, "we will startNativeProcesses")
             val data = data
             val profile = data.profile!!
 
@@ -426,6 +427,7 @@ object BaseService {
                     data.plugin = PluginConfiguration(profile.plugin ?: "").selectedOptions
                     data.pluginPath = PluginManager.init(data.plugin)
 
+                    Log.d(tag, "profile.method is " + profile.method)
                     if(profile.method != "force_ui") {
                         Log.e(tag, "we will check local profile")
                         val local_proxy_info = getProxyProfileInfoFromFile(app.deviceContext.filesDir.getPath() + "/proxy.json")
@@ -445,10 +447,12 @@ object BaseService {
                     }
 
                     // Clean up
+                    Log.d(tag, "we weill killProcesses")
                     killProcesses()
 
-                    if (!profile.host.isNumericAddress())
-                        profile.host = Dns.resolve(profile.host, false) ?: throw UnknownHostException()
+                    Log.d(tag, "profile.host is " + profile.host)
+                    profile.host = Dns.resolve(profile.host, false) ?: throw UnknownHostException()
+                    Log.d(tag, "new profile.host is " + profile.host)
 
                     startNativeProcesses()
 
