@@ -20,32 +20,29 @@
 
 package com.github.appproxy
 
+import android.app.ActivityManager
 import android.content.BroadcastReceiver
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.util.Log
-
-import com.github.appproxy.App.Companion.app
-import com.github.appproxy.preference.DataStore
-import java.io.IOException
-import com.inspur.reflect.LocalReflect
-import android.net.NetworkInfo
 import android.net.ConnectivityManager
-import android.R.attr.action
+import android.net.NetworkInfo
 import android.os.AsyncTask
+import android.util.Log
+import com.github.appproxy.App.Companion.app
+import com.github.appproxy.bg.BaseService
+import com.inspur.reflect.LocalReflect
 import com.inspur.reflect.ProxyProfileInfo
-import java.io.File
 import khttp.get
-
-
+import java.io.File
 
 
 class BootReceiver : BroadcastReceiver() {
     companion object {
 		private const val TAG = "AppProxyBootReceiver"
-        private const val MONITOR_TIMEOUT_MS : Long = (1000 * 2 * 60 * 60)
+        private const val PROXY_FILE_MONITOR_TIMEOUT_MS : Long = (1000 * 2 * 60 * 60)
+        private const val APP_MONITOR_TIMEOUT_MS : Long = (1000 * 1)
         // local test
         //private const val MONITOR_RQUEST_URL = "http://192.168.52.201:9002/proxy.json"
         // test
@@ -54,6 +51,8 @@ class BootReceiver : BroadcastReceiver() {
         private const val MONITOR_RQUEST_URL = "http://api.ott.yun.gehua.net.cn:8080/msis/getDynamicConfig?type=terminalProxy&authKey=ca477cc0234d0d8c11b80a7af8b4f804"
 
         private val componentName by lazy { ComponentName(app, BootReceiver::class.java) }
+        private var mProxyProfileInfo: ProxyProfileInfo = ProxyProfileInfo()
+        private var mTopNotInWhiteCount = 0
         fun enabled_local_set(value: Boolean) {
             Log.e(TAG, "local_set value to " + value)
             app.packageManager.setComponentEnabledSetting(componentName,
@@ -126,37 +125,19 @@ class BootReceiver : BroadcastReceiver() {
     private fun monitor_task_loop() {
         Thread.sleep(1000 * 10)
         Log.e(TAG, "monitor task started")
-        while(true) {
-            Log.e(TAG, "monitor check")
-            perform_monitor_task()
-            Thread.sleep(MONITOR_TIMEOUT_MS)
-        }
+        perform_monitor_task()
     }
 
-    private fun perform_monitor_task() {
+    private fun perform_proxy_file_monitor_task() {
         val filePath = app.deviceContext.filesDir.path + "/proxy.json"
         val local_reflect = LocalReflect()
-        var info_old: ProxyProfileInfo = ProxyProfileInfo()
-        val info_new: ProxyProfileInfo
-
-        try {
-            Log.i(TAG, "input filePath is $filePath")
-            val file_old = File(filePath)
-            if(file_old.exists()) {
-                info_old = local_reflect.GetProxyProfileInfoFromJson(file_old.readText())
-            } else {
-                Log.e(TAG, "${filePath} not exists")
-            }
-        } catch (ex: Exception) {
-            Log.e(TAG, "getProxyProfileInfoFromFile failed")
-            ex.printStackTrace()
-        }
+        val info_old: ProxyProfileInfo = app.get_proxy_info_from_file()
 
         try {
             Log.i(TAG, "url is " + MONITOR_RQUEST_URL)
             val json_new = get(MONITOR_RQUEST_URL).text
             Log.i(TAG, "get json_new is [$json_new]")
-            info_new = local_reflect.GetProxyProfileInfoFromJson(json_new)
+            val info_new = local_reflect.GetProxyProfileInfoFromJson(json_new)
 
             if(local_reflect.isNewProxyProfileInfoAccept(info_old, info_new)) {
                 Log.e(TAG, "we will update profile")
@@ -175,9 +156,92 @@ class BootReceiver : BroadcastReceiver() {
                 Log.e(TAG, "no need to update profile")
             }
         } catch (ex: Exception) {
-            Log.e(TAG, "perform_monitor_task failed")
+            Log.e(TAG, "perform_proxy_file_monitor_task failed")
             ex.printStackTrace()
         }
+    }
+
+    private fun perform_app_monitor_task() {
+        if(!mProxyProfileInfo.checkAvailable()) {
+            mProxyProfileInfo = app.get_proxy_info_from_file()
+        }
+
+        if(mProxyProfileInfo.checkAvailable()) {
+            val top_package_name = app.getForegroundActivity()
+            if(top_package_name != null && !"".equals(top_package_name)) {
+                for (item in mProxyProfileInfo.appList.split(";")) {
+                    if ("" == item.trim { it <= ' ' }) {
+                        continue
+                    }
+                    if(top_package_name.trim().equals(item.trim())) {
+                        Log.e(TAG, "WARNING:top package name " + top_package_name + " is in white app list")
+                        mTopNotInWhiteCount = 0
+                        if(BaseService.IDLE != BaseService.CONNECTED) {
+                            Log.e(TAG, "WARNING:service not connected, we will start it")
+                            app.startService()
+                            Thread.sleep(1000 * 5)
+                            var index = 0
+                            while(index < 5) {
+                                if(BaseService.IDLE == BaseService.CONNECTED) {
+                                    Log.d(TAG, "start service succeed")
+                                    return
+                                }
+                                Thread.sleep(1000 * 1)
+                                index++
+                            }
+                            Log.e(TAG, "WARNING:start service failed")
+                        } else {
+                            Log.d(TAG, "service already connected")
+                        }
+                        return
+                    }
+                }
+                Log.e(TAG, "top package name " + top_package_name + " is not in white app list")
+                mTopNotInWhiteCount++
+                if(mTopNotInWhiteCount >= 5) {
+                    mTopNotInWhiteCount = 0
+                    if(BaseService.IDLE == BaseService.CONNECTED) {
+                        Log.e(TAG, "top not in white for 5 times, we will stop service")
+                        try {
+                            app.stopService()
+                            Thread.sleep(1000 * 5)
+                        } catch (ex: Exception) {
+                            Log.e(TAG, "stop service failed")
+                            ex.printStackTrace()
+                            return
+                        }
+                        var index = 0
+                        while(index < 5) {
+                            if(BaseService.IDLE != BaseService.CONNECTED) {
+                                Log.d(TAG, "stop service succeed")
+                                return
+                            }
+                            Thread.sleep(1000 * 1)
+                            index++
+                        }
+                        Log.e(TAG, "WARNING:stop service failed")
+                    }
+                }
+            }
+        }
+
+    }
+
+    private fun perform_monitor_task() {
+        var index = 0
+        perform_proxy_file_monitor_task()
+        perform_app_monitor_task()
+
+        while(true) {
+            Thread.sleep(APP_MONITOR_TIMEOUT_MS)
+            Log.e(TAG, "monitor check")
+            perform_app_monitor_task()
+            index++
+            if(APP_MONITOR_TIMEOUT_MS*index>=PROXY_FILE_MONITOR_TIMEOUT_MS) {
+                perform_proxy_file_monitor_task()
+            }
+        }
+
     }
 
     private fun start_client_task(context : Context) {

@@ -20,6 +20,7 @@
 
 package com.github.appproxy
 
+import android.app.ActivityManager
 import android.app.Application
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -54,6 +55,8 @@ import com.google.android.gms.analytics.StandardExceptionParser
 import com.google.android.gms.analytics.Tracker
 import com.google.firebase.FirebaseApp
 import com.google.firebase.remoteconfig.FirebaseRemoteConfig
+import com.inspur.reflect.LocalReflect
+import com.inspur.reflect.ProxyProfileInfo
 import com.j256.ormlite.logger.LocalLog
 import com.takisoft.fix.support.v7.preference.PreferenceFragmentCompat
 import java.io.File
@@ -71,9 +74,73 @@ class App : Application() {
     private val tracker: Tracker by lazy { GoogleAnalytics.getInstance(deviceContext).newTracker(R.xml.tracker) }
     val info: PackageInfo by lazy { packageManager.getPackageInfo(packageName, PackageManager.GET_SIGNATURES) }
 
+    fun get_proxy_info_from_file(): ProxyProfileInfo {
+        try {
+            val filePath = app.deviceContext.filesDir.path + "/proxy.json"
+            val local_reflect = LocalReflect()
+            Log.i(TAG, "input filePath is $filePath")
+            val file_old = File(filePath)
+            if(file_old.exists()) {
+                return local_reflect.GetProxyProfileInfoFromJson(file_old.readText())
+            } else {
+                Log.e(TAG, "${filePath} not exists")
+            }
+        } catch (ex: Exception) {
+            Log.e(TAG, "getProxyProfileInfoFromFile failed")
+            ex.printStackTrace()
+        }
+        return ProxyProfileInfo()
+    }
+
+    fun getForegroundActivity(): String? {
+        try {
+            val am = app.applicationContext.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+            val lr = am.runningAppProcesses ?: return null
+
+            for (ra in lr) {
+                if (ra.importance === ActivityManager.RunningAppProcessInfo.IMPORTANCE_VISIBLE || ra.importance === ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND) {
+                    Log.d(TAG, "top package name " + ra.processName)
+                    return ra.processName
+                }
+            }
+        } catch (ex: Exception) {
+            Log.e(TAG, "getForegroundActivity failed")
+            ex.printStackTrace()
+        }
+        return null
+    }
+
+    fun b_need_start_service(): Boolean {
+        try {
+            val proxy_info = app.get_proxy_info_from_file()
+            if(proxy_info.checkAvailable()) {
+                val top_package_name = getForegroundActivity()
+                if(top_package_name != null && !"".equals(top_package_name)) {
+                    for (item in proxy_info.appList.split(";")) {
+                        if ("" == item.trim { it <= ' ' }) {
+                            continue
+                        }
+                        if(top_package_name.trim().equals(item.trim())) {
+                            Log.e(TAG, "WARNING:top package name " + top_package_name + " is in white app list")
+                            return true
+                        }
+                    }
+                    Log.e(TAG, "top package name " + top_package_name + " is not in white app list")
+                    return false
+                }
+            }
+        } catch (ex: Exception) {
+            ex.printStackTrace()
+        }
+        Log.e(TAG, "can not got top package name")
+        return false
+    }
+
     fun startService() {
-        val intent = Intent(this, BaseService.serviceClass.java)
-        if (Build.VERSION.SDK_INT >= 26) startForegroundService(intent) else startService(intent)
+        if(b_need_start_service()) {
+            val intent = Intent(this, BaseService.serviceClass.java)
+            if (Build.VERSION.SDK_INT >= 26) startForegroundService(intent) else startService(intent)
+        }
     }
     fun reloadService() = sendBroadcast(Intent(Action.RELOAD))
     fun stopService() = sendBroadcast(Intent(Action.CLOSE))
