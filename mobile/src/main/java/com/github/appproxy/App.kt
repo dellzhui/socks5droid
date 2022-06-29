@@ -106,7 +106,7 @@ class App : Application() {
 
             for (ra in lr) {
                 if (ra.importance === ActivityManager.RunningAppProcessInfo.IMPORTANCE_VISIBLE || ra.importance === ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND) {
-                    Log.d(TAG, "top package name " + ra.processName)
+//                    Log.d(TAG, "top package name " + ra.processName)
                     return ra.processName
                 }
             }
@@ -124,7 +124,7 @@ class App : Application() {
             var ia: InetAddress? = null
             while (nis.hasMoreElements()) {
                 val ni: NetworkInterface = nis.nextElement() as NetworkInterface
-                Log.d(TAG,"getIpAddress,interface:"+ni.getName());
+//                Log.d(TAG,"getIpAddress,interface:"+ni.getName());
                 if (ni.getName().equals("tun0")) {
                     val ias: Enumeration<InetAddress> = ni.getInetAddresses()
                     while (ias.hasMoreElements()) {
@@ -144,7 +144,7 @@ class App : Application() {
         } catch (e: SocketException) {
             e.printStackTrace()
         }
-        Log.d(TAG, "getIpAddress,interface:tun0" + ",ip:" + hostIp)
+//        Log.d(TAG, "getIpAddress,interface:tun0" + ",ip:" + hostIp)
         return hostIp != null && !"".equals(hostIp)
     }
 
@@ -159,11 +159,11 @@ class App : Application() {
                             continue
                         }
                         if(top_package_name.trim().equals(item.trim())) {
-                            Log.e(TAG, "WARNING:top package name " + top_package_name + " is in white app list")
+//                            Log.e(TAG, "WARNING:top package name " + top_package_name + " is in white app list")
                             return true
                         }
                     }
-                    Log.e(TAG, "top package name " + top_package_name + " is not in white app list")
+//                    Log.e(TAG, "top package name " + top_package_name + " is not in white app list")
                     return false
                 }
             }

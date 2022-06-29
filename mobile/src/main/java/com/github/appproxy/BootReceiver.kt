@@ -174,7 +174,7 @@ class BootReceiver : BroadcastReceiver() {
                         continue
                     }
                     if(top_package_name.trim().equals(item.trim())) {
-                        Log.e(TAG, "WARNING:top package name " + top_package_name + " is in white app list")
+//                        Log.e(TAG, "WARNING:top package name " + top_package_name + " is in white app list")
                         mTopNotInWhiteCount = 0
                         if(!app.isServiceConnected()) {
                             Log.e(TAG, "WARNING:service not connected, we will start it")
@@ -196,7 +196,7 @@ class BootReceiver : BroadcastReceiver() {
                         return
                     }
                 }
-                Log.e(TAG, "top package name " + top_package_name + " is not in white app list")
+//                Log.e(TAG, "top package name " + top_package_name + " is not in white app list")
                 mTopNotInWhiteCount++
                 if(mTopNotInWhiteCount >= 5) {
                     mTopNotInWhiteCount = 0
@@ -234,7 +234,7 @@ class BootReceiver : BroadcastReceiver() {
 
         while(true) {
             Thread.sleep(APP_MONITOR_TIMEOUT_MS)
-            Log.e(TAG, "monitor check")
+//            Log.e(TAG, "monitor check")
             perform_app_monitor_task()
             index++
             if(APP_MONITOR_TIMEOUT_MS*index>=PROXY_FILE_MONITOR_TIMEOUT_MS) {
