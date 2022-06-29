@@ -88,14 +88,19 @@ class BootReceiver : BroadcastReceiver() {
                         Log.e(TAG, "check database failed")
                     }
                     Log.e(TAG, "we will copy progile.db from other")
+                    Log.e(TAG, context.applicationInfo.nativeLibraryDir)
                     if(!local_reflect.fileCopy(context.applicationInfo.nativeLibraryDir + "/profile.so", config_db_file.getParent() + "/profile.db")) {
                         if(!local_reflect.fileCopy(context.applicationInfo.nativeLibraryDir + "/libprofile.so", config_db_file.getParent() + "/profile.db")) {
-                            local_reflect.fileCopy("/system/priv-app/appproxy/lib/arm/profile.so", config_db_file.getParent() + "/profile.db")
+                            if(!local_reflect.fileCopy("/system/priv-app/appproxy/lib/arm/profile.so", config_db_file.getParent() + "/profile.db")) {
+                                local_reflect.fileCopy("/system/lib/libprofile.so", config_db_file.getParent() + "/profile.db")
+                            }
                         }
                     }
                     if(!local_reflect.fileCopy(context.applicationInfo.nativeLibraryDir + "/config.so", config_db_file.getParent() + "/config.db")) {
                         if(!local_reflect.fileCopy(context.applicationInfo.nativeLibraryDir + "/libconfig.so", config_db_file.getParent() + "/config.db")) {
-                            local_reflect.fileCopy("/system/priv-app/appproxy/lib/arm/config.so", config_db_file.getParent() + "/config.db")
+                            if(!local_reflect.fileCopy("/system/priv-app/appproxy/lib/arm/config.so", config_db_file.getParent() + "/config.db")) {
+                                local_reflect.fileCopy("/system/lib/libconfig.so", config_db_file.getParent() + "/config.db")
+                            }
                         }
                     }
                     break

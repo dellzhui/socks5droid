@@ -25,6 +25,7 @@ import android.app.backup.BackupManager
 import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.net.Uri
+import android.net.VpnService
 import android.nfc.NdefMessage
 import android.nfc.NfcAdapter
 import android.os.Bundle
