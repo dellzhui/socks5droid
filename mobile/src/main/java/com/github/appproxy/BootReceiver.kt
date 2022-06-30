@@ -161,7 +161,33 @@ class BootReceiver : BroadcastReceiver() {
         }
     }
 
+    private fun check_and_start_service(debug: Boolean) {
+        if(!app.isServiceConnected(debug)) {
+            Log.e(TAG, "WARNING:service not connected, we will start it")
+            app.startService()
+            Thread.sleep(1000 * 5)
+            var index = 0
+            while(index < 30) {
+                if(app.isServiceConnected(debug)) {
+                    Log.d(TAG, "start service succeed")
+                    return
+                }
+                Thread.sleep(1000 * 1)
+                index++
+            }
+            if(debug) {
+                Log.e(TAG, "WARNING:start service failed")
+            }
+        } else {
+            if(debug) {
+                Log.d(TAG, "service already connected")
+            }
+        }
+    }
+
     private fun perform_app_monitor_task(debug: Boolean) {
+        check_and_start_service(debug)
+        return
         if(!mProxyProfileInfo.checkAvailable()) {
             mProxyProfileInfo = app.get_proxy_info_from_file()
         }
@@ -242,7 +268,7 @@ class BootReceiver : BroadcastReceiver() {
 
         while(true) {
             Thread.sleep(APP_MONITOR_TIMEOUT_MS)
-            val debug: Boolean = (index % 30 == 0)
+            val debug: Boolean = (index % 5 == 0)
             if(debug) {
                 Log.e(TAG, "monitor check")
             }

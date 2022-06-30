@@ -155,6 +155,7 @@ class App : Application() {
     }
 
     private fun b_need_start_service(): Boolean {
+        return true
         try {
             val proxy_info = app.get_proxy_info_from_file()
             if(proxy_info.checkAvailable()) {
