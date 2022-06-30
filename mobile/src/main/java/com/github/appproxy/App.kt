@@ -105,7 +105,7 @@ class App : Application() {
             val lr = am.runningAppProcesses ?: return null
 
             for (ra in lr) {
-                if (ra.importance === ActivityManager.RunningAppProcessInfo.IMPORTANCE_VISIBLE || ra.importance === ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND) {
+                if (ra.importance === ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND) {
                     if(debug) {
                         Log.d(TAG, "top package name " + ra.processName)
                     }
