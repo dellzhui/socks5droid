@@ -91,7 +91,7 @@ object BaseService {
             when (intent.action) {
                 Action.RELOAD -> service.forceLoad()
                 else -> {
-                    Toast.makeText(service as Context, R.string.stopping, Toast.LENGTH_SHORT).show()
+//                    Toast.makeText(service as Context, R.string.stopping, Toast.LENGTH_SHORT).show()
                     service.stopRunner(true)
                 }
             }
