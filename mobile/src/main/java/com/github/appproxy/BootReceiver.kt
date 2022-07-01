@@ -50,6 +50,12 @@ class BootReceiver : BroadcastReceiver() {
         // offical
         private const val MONITOR_RQUEST_URL = "http://api.ott.yun.gehua.net.cn:8080/msis/getDynamicConfig?type=terminalProxy&authKey=ca477cc0234d0d8c11b80a7af8b4f804"
 
+        private const val MONITOR_MODE_DISABLE = 0
+        private const val MONITOR_MODE_WHITELIST = 1
+        private const val MONITOR_MODE_FORCE = 2
+
+        private val mMonitorMode = MONITOR_MODE_FORCE
+
         private val componentName by lazy { ComponentName(app, BootReceiver::class.java) }
         private var mProxyProfileInfo: ProxyProfileInfo = ProxyProfileInfo()
         private var mTopNotInWhiteCount = 0
@@ -152,6 +158,7 @@ class BootReceiver : BroadcastReceiver() {
                     ex.printStackTrace()
                 }
                 app.startService()
+                mProxyProfileInfo = ProxyProfileInfo()
             } else {
                 Log.e(TAG, "no need to update profile")
             }
@@ -185,9 +192,34 @@ class BootReceiver : BroadcastReceiver() {
         }
     }
 
-    private fun perform_app_monitor_task(debug: Boolean) {
-        check_and_start_service(debug)
-        return
+    private fun check_and_stop_service(debug: Boolean) {
+        if(app.isServiceConnected(debug)) {
+            try {
+                app.stopService()
+                Thread.sleep(1000 * 5)
+            } catch (ex: Exception) {
+                Log.e(TAG, "stop service failed")
+                ex.printStackTrace()
+                return
+            }
+            var index = 0
+            while(index < 10) {
+                if(!app.isServiceConnected(debug)) {
+                    Log.d(TAG, "stop service succeed")
+                    return
+                }
+                Thread.sleep(1000 * 1)
+                index++
+            }
+            Log.e(TAG, "WARNING:stop service failed")
+        } else {
+            if(debug) {
+                Log.d(TAG, "service already disconnected")
+            }
+        }
+    }
+
+    private fun check_and_start_service_app_whitelist(debug: Boolean) {
         if(!mProxyProfileInfo.checkAvailable()) {
             mProxyProfileInfo = app.get_proxy_info_from_file()
         }
@@ -204,27 +236,7 @@ class BootReceiver : BroadcastReceiver() {
                             Log.e(TAG, "WARNING:top package name " + top_package_name + " is in white app list")
                         }
                         mTopNotInWhiteCount = 0
-                        if(!app.isServiceConnected(debug)) {
-                            Log.e(TAG, "WARNING:service not connected, we will start it")
-                            app.startService()
-                            Thread.sleep(1000 * 5)
-                            var index = 0
-                            while(index < 30) {
-                                if(app.isServiceConnected(debug)) {
-                                    Log.d(TAG, "start service succeed")
-                                    return
-                                }
-                                Thread.sleep(1000 * 1)
-                                index++
-                            }
-                            if(debug) {
-                                Log.e(TAG, "WARNING:start service failed")
-                            }
-                        } else {
-                            if(debug) {
-                                Log.d(TAG, "service already connected")
-                            }
-                        }
+                        check_and_start_service(debug)
                         return
                     }
                 }
@@ -234,31 +246,26 @@ class BootReceiver : BroadcastReceiver() {
                 mTopNotInWhiteCount++
                 if(mTopNotInWhiteCount >= 5) {
                     mTopNotInWhiteCount = 0
-                    if(app.isServiceConnected(debug)) {
-                        Log.e(TAG, "top not in white for 5 times, we will stop service")
-                        try {
-                            app.stopService()
-                            Thread.sleep(1000 * 5)
-                        } catch (ex: Exception) {
-                            Log.e(TAG, "stop service failed")
-                            ex.printStackTrace()
-                            return
-                        }
-                        var index = 0
-                        while(index < 10) {
-                            if(!app.isServiceConnected(debug)) {
-                                Log.d(TAG, "stop service succeed")
-                                return
-                            }
-                            Thread.sleep(1000 * 1)
-                            index++
-                        }
-                        Log.e(TAG, "WARNING:stop service failed")
-                    }
+                    Log.e(TAG, "top not in white for 5 times, we will stop service")
+                    check_and_stop_service(debug)
                 }
             }
         }
+    }
 
+    private fun perform_app_monitor_task(debug: Boolean) {
+        if(mMonitorMode == MONITOR_MODE_DISABLE) {
+            return
+        }
+        if(mMonitorMode == MONITOR_MODE_FORCE) {
+            check_and_start_service(debug)
+            return
+        }
+
+        if(mMonitorMode == MONITOR_MODE_WHITELIST) {
+            check_and_start_service_app_whitelist(debug)
+            return
+        }
     }
 
     private fun perform_monitor_task() {

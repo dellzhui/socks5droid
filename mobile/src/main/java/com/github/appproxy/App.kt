@@ -126,9 +126,9 @@ class App : Application() {
             var ia: InetAddress? = null
             while (nis.hasMoreElements()) {
                 val ni: NetworkInterface = nis.nextElement() as NetworkInterface
-                if(debug) {
-                    Log.d(TAG,"getIpAddress,interface:"+ni.getName());
-                }
+//                if(debug) {
+//                    Log.d(TAG,"getIpAddress,interface:"+ni.getName());
+//                }
                 if (ni.getName().equals("tun0")) {
                     val ias: Enumeration<InetAddress> = ni.getInetAddresses()
                     while (ias.hasMoreElements()) {
