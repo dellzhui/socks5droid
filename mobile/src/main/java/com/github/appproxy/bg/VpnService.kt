@@ -187,7 +187,7 @@ class VpnService : BaseVpnService(), LocalDnsService.Interface {
                 resources.getStringArray(R.array.bypass_private_route).forEach {
                     val subnet = Subnet.fromString(it)!!
                     try {
-                        Log.d(tag, subnet.address.hostAddress    + " subnet.prefixSize was added to toute list")
+                        Log.d(tag, subnet.address.hostAddress + " was added to toute list")
                         builder.addRoute(subnet.address.hostAddress, subnet.prefixSize)
                     } catch (ex: Exception) {
                         Log.e(tag, "failed to add route " + subnet)

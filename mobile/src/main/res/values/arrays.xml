@@ -76,18 +76,7 @@
         <item>11.0.0.0/8</item>
         <item>12.0.0.0/6</item>
         <item>16.0.0.0/4</item>
-        <item>32.0.0.0/4</item>
-        <item>48.0.0.0/5</item>
-        <item>60.0.0.0/6</item>
-        <item>56.0.0.0/7</item>
-        <item>59.0.0.0/8</item>
-        <item>58.128.0.0/9</item>
-        <item>58.64.0.0/10</item>
-        <item>58.32.0.0/11</item>
-        <item>58.0.0.0/12</item>
-        <item>58.16.0.0/13</item>
-        <item>58.24.0.0/14</item>
-        <item>58.28.0.0/15</item>
+        <item>32.0.0.0/3</item>
         <item>64.0.0.0/3</item>
         <item>96.0.0.0/6</item>
         <item>100.0.0.0/10</item>
@@ -234,17 +223,7 @@
         <item>203.64.0.0/10</item>
         <item>203.128.0.0/9</item>
         <item>204.0.0.0/6</item>
-        <item>208.0.0.0/5</item>
-        <item>220.0.0.0/6</item>
-        <item>216.0.0.0/7</item>
-        <item>218.0.0.0/8</item>
-        <item>219.0.0.0/9</item>
-        <item>219.128.0.0/10</item>
-        <item>219.192.0.0/11</item>
-        <item>219.240.0.0/12</item>
-        <item>219.224.0.0/13</item>
-        <item>219.232.0.0/14</item>
-        <item>219.238.0.0/15</item>
+        <item>208.0.0.0/4</item>
     </string-array>
 
     <string-array name="acl_rule_templates" translatable="false">
